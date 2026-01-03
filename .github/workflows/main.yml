@@ -6,6 +6,9 @@ on:
       - master
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     strategy:
@@ -26,6 +29,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
+          cache-version: 1
       - name: Start Redis
         uses: supercharge/redis-github-action@1.4.0
 
