@@ -22,6 +22,10 @@ class RecommendationIndicatorsController < ApplicationController
     end
   end
 
+  def update
+    head :not_implemented
+  end
+
   def destroy
     @recommendation_indicator.destroy
   end

@@ -13,6 +13,18 @@ class MeasuretypeTaxonomiesController < ApplicationController
     render json: serialize(@measuretype_taxonomies)
   end
 
+  def create
+    head :not_implemented
+  end
+
+  def update
+    head :not_implemented
+  end
+
+  def destroy
+    head :not_implemented
+  end
+
   private
 
   def base_object

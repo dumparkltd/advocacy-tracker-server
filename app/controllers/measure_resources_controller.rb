@@ -24,6 +24,10 @@ class MeasureResourcesController < ApplicationController
       render json: @measure_resource.errors, status: :unprocessable_entity
     end
   end
+  
+  def update
+    head :not_implemented
+  end
 
   # DELETE /measure_resources/1
   def destroy

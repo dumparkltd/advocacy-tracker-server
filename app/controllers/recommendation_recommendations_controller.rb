@@ -20,6 +20,10 @@ class RecommendationRecommendationsController < ApplicationController
       render json: @recommendation_recommendation.errors, status: :unprocessable_entity
     end
   end
+  
+  def update
+    head :not_implemented
+  end
 
   def destroy
     @recommendation_recommendation.destroy
