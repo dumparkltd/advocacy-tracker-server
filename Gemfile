@@ -3,17 +3,23 @@
 source "https://rubygems.org"
 ruby File.read(File.expand_path(".ruby-version", __dir__)).strip
 
+gem "base64"
 gem "batch_api"
 gem "bcrypt", "~> 3.1.7"
+gem "bigdecimal"
 gem "devise"
 gem "devise_token_auth"
+gem "drb"
 gem "foundation-rails"
 gem "jquery-rails"
 gem "jsonapi-serializer"
 gem "kaminari"
+gem "logger"
+gem "mutex_m"
 gem "net-smtp"
+gem "observer"
 gem "paper_trail"
-gem "pg", "~> 1.2"
+gem "pg", "~> 1.5"
 gem "puma", "~> 5.5"
 gem "pundit"
 gem "rack-cors", require: "rack/cors"
@@ -46,10 +52,11 @@ group :development, :test do
   gem "brakeman"
   gem "byebug"
   gem "dotenv-rails"
-  gem "factory_bot_rails", "~> 6.0"
+
+  gem "factory_bot_rails", "~> 6.4"
   gem "faker"
   gem "i18n-tasks", "~> 0.9.6"
-  gem "rspec-rails"
+  gem "rspec-rails", "~> 6.0"
 end
 
 group :test do
