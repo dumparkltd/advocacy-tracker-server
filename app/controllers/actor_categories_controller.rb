@@ -30,6 +30,10 @@ class ActorCategoriesController < ApplicationController
     @actor_category.destroy
   end
 
+  def update
+    head :not_implemented
+  end
+
   private
 
   # Use callbacks to share common setup or constraints between actions.

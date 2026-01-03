@@ -24,11 +24,16 @@ class MembershipsController < ApplicationController
       render json: @membership.errors, status: :unprocessable_entity
     end
   end
+  
+  def update
+    head :not_implemented
+  end
 
   # DELETE /memberships/1
   def destroy
     @membership.destroy
   end
+
 
   private
 

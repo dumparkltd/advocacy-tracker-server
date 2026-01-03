@@ -2,7 +2,7 @@
 
 class ApplicationController < ActionController::Base
   include DeviseTokenAuth::Concerns::SetUserByToken
-  include Pundit
+  include Pundit::Authorization
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
   protect_from_forgery with: :exception
@@ -12,7 +12,7 @@ class ApplicationController < ActionController::Base
 
   before_action :authenticate_user!, only: [:create, :update, :destroy], unless: :devise_controller?
   before_action :authorize!
-  after_action :verify_authorized, except: [:index, :sign_in], unless: :devise_controller?
+  after_action :verify_authorized, except: [:index], unless: :devise_controller?
   after_action :verify_policy_scoped, only: :index, unless: :devise_controller?
 
   before_action :configure_permitted_parameters, if: :devise_controller?

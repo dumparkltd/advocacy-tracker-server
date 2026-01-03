@@ -14,6 +14,18 @@ class MeasuretypesController < ApplicationController
     render json: serialize(@measuretype)
   end
 
+  def create
+    head :not_implemented
+  end
+
+  def update
+    head :not_implemented
+  end
+
+  def destroy
+    head :not_implemented
+  end
+
   private
 
   def set_and_authorize_measuretype

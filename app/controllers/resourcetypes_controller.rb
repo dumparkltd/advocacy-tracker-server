@@ -13,6 +13,18 @@ class ResourcetypesController < ApplicationController
   def show
     render json: serialize(@resourcetype)
   end
+  
+  def create
+    head :not_implemented
+  end
+
+  def update
+    head :not_implemented
+  end
+
+  def destroy
+    head :not_implemented
+  end
 
   private
 
