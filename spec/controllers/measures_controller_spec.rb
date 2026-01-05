@@ -24,7 +24,7 @@ RSpec.describe MeasuresController, type: :controller do
       end
 
       context "draft" do
-        let!(:measure) { FactoryBot.create(:measure) }
+        let!(:measure) { FactoryBot.create(:measure, draft: false) }
         let!(:draft_measure) { FactoryBot.create(:measure, draft: true) }
 
         it "admin will see draft measures" do
@@ -54,8 +54,8 @@ RSpec.describe MeasuresController, type: :controller do
       end
 
       context "is_archive measures" do
-        let!(:measure) { FactoryBot.create(:measure, :not_is_archive) }
-        let!(:is_archive_measure) { FactoryBot.create(:measure, :is_archive) }
+        let!(:measure) { FactoryBot.create(:measure, :not_is_archive, :not_draft) }
+        let!(:is_archive_measure) { FactoryBot.create(:measure, :is_archive, :not_draft) }
 
         it "admin will see" do
           sign_in admin
@@ -262,6 +262,60 @@ RSpec.describe MeasuresController, type: :controller do
         end
       end
 
+      context "public_api" do
+        let(:statement_measuretype) { FactoryBot.create(:measuretype, id: Measure::STATEMENT_TYPE_ID, title: "Statement") }
+        let(:params) do
+          {
+            measure: {
+              title: "test",
+              description: "test",
+              measuretype_id: statement_measuretype.id,
+              target_date: "today",
+              public_api: true,
+              draft: false,
+              is_archive: false,
+              private: false
+            }
+          }
+        end
+
+        it "can't be set by manager" do
+          sign_in manager
+          expect(subject).to be_created
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq false
+        end
+
+        it "can be set by admin for statements" do
+          sign_in admin
+          expect(subject).to be_created
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
+        end
+
+        context "for non-statements" do
+          let(:params) do
+            {
+              measure: {
+                title: "test",
+                description: "test",
+                measuretype_id: measuretype.id,
+                target_date: "today",
+                public_api: true,
+                draft: false,
+                is_archive: false,
+                private: false
+              }
+            }
+          end
+
+          it "will be rejected by validation" do
+            sign_in admin
+            expect(subject).to have_http_status(422)
+            json = JSON.parse(subject.body)
+            expect(json["public_api"]).to be_present
+          end
+        end
+      end
+
       it "will record what manager created the measure", versioning: true do
         expect(PaperTrail).to be_enabled
         sign_in manager
@@ -278,7 +332,7 @@ RSpec.describe MeasuresController, type: :controller do
   end
 
   describe "PUT update" do
-    let(:measure) { FactoryBot.create(:measure) }
+    let(:measure) { FactoryBot.create(:measure, :not_draft) }
     subject do
       put :update,
         format: :json,
@@ -379,7 +433,7 @@ RSpec.describe MeasuresController, type: :controller do
           end
 
           context "when the task is archived" do
-            let(:measure) { FactoryBot.create(:measure, :is_archive, notifications: true) }
+            let(:measure) { FactoryBot.create(:measure, :is_archive, :not_draft, notifications: true) }
 
             it "does not notify the user of an update to #{attr}" do
               expect(TaskNotificationJob).not_to receive(:perform_in)
@@ -474,6 +528,45 @@ RSpec.describe MeasuresController, type: :controller do
           it "can be set by admin" do
             sign_in admin
             expect(JSON.parse(subject.body).dig("data", "attributes", "is_archive")).to eq true
+          end
+        end
+
+        context "public_api" do
+          let(:statement_measuretype) { FactoryBot.create(:measuretype, id: Measure::STATEMENT_TYPE_ID, title: "Statement") }
+          let(:measure) { FactoryBot.create(:measure, measuretype: statement_measuretype, draft: false, is_archive: false, private: false) }
+
+          subject do
+            put :update, format: :json, params: {
+              id: measure,
+              measure: {
+                public_api: true,
+                draft: false,
+                is_archive: false,
+                private: false
+              }
+            }
+          end
+
+          it "can't be set by manager" do
+            sign_in manager
+            expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq false
+          end
+
+          it "can be set by admin for statements" do
+            sign_in admin
+            expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
+          end
+
+          context "attempting to set for non-statement" do
+            let(:non_statement_measuretype) { FactoryBot.create(:measuretype, :not_a_statement) }
+            let(:measure) { FactoryBot.create(:measure, measuretype: non_statement_measuretype, draft: false, is_archive: false, private: false) }
+
+            it "will be rejected by validation" do
+              sign_in admin
+              expect(subject).to have_http_status(422)
+              json = JSON.parse(subject.body)
+              expect(json.dig("error", "public_api")).to be_present
+            end
           end
         end
 

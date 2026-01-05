@@ -5,8 +5,17 @@ FactoryBot.define do
     association(:measuretype)
     target_date { Faker::Date.forward(days: 450) }
 
+    is_archive { false }
+    private { false }
+    draft { true }
+    public_api { false }
+
     trait :draft do
       draft { true }
+    end
+
+    trait :not_draft do
+      draft { false }
     end
 
     trait :published do
@@ -31,6 +40,18 @@ FactoryBot.define do
 
     trait :private do
       private { true }
+    end
+
+    trait :statement do
+      measuretype_id { Measure::STATEMENT_TYPE_ID }
+    end
+
+    trait :public do
+      public_api { true }
+    end
+
+    trait :not_public do
+      public_api { false }
     end
   end
 end

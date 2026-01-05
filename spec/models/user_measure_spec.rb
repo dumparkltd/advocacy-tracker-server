@@ -26,7 +26,7 @@ RSpec.describe UserMeasure, type: :model do
     end
 
     context "when the measure is a task" do
-      let(:measure) { FactoryBot.create(:measure, measuretype: FactoryBot.create(:measuretype, notifications: true)) }
+      let(:measure) { FactoryBot.create(:measure, :not_draft, measuretype: FactoryBot.create(:measuretype, notifications: true)) }
 
       it "create does not send a task updated email to the user it was just assigned to" do
         expect(TaskNotificationJob).not_to receive(:perform_in).with(anything, user.id, measure.id)

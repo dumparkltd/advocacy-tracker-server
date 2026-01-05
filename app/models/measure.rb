@@ -101,7 +101,7 @@ class Measure < VersionedRecord
   end
 
   def publicly_accessible?
-    public_api? && measuretype_id == STATEMENT_TYPE_ID
+    public_api? && statement? && !is_archive? && !private? && !draft?
   end
 
   def statement?

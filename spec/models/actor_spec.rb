@@ -1,6 +1,9 @@
 require "rails_helper"
 
 RSpec.describe Actor, type: :model do
+  let!(:country_actortype) { FactoryBot.create(:actortype, :country) }
+  let!(:not_country_actortype) { FactoryBot.create(:actortype, :not_a_country) }
+
   it { is_expected.to validate_presence_of :title }
   it { is_expected.to belong_to :actortype }
 
@@ -44,4 +47,176 @@ RSpec.describe Actor, type: :model do
       expect(subject.errors[:parent_id]).to include("can't be its own descendant")
     end
   end
+
+  describe 'constants' do
+    it 'defines COUNTRY_TYPE_ID' do
+      expect(Actor::COUNTRY_TYPE_ID).to eq(1)
+    end
+  end
+
+  describe 'type immutability' do
+    it 'allows setting actortype_id on creation' do
+      expect {
+        actor = FactoryBot.create(:actor, actortype: country_actortype)
+        expect(actor.actortype_id).to eq(Actor::COUNTRY_TYPE_ID)
+      }.to change(Actor, :count).by(1)
+    end
+
+    it 'prevents changing actortype_id after creation' do
+      actor = FactoryBot.create(:actor, actortype: country_actortype)
+      expect {
+        actor.update!(actortype_id: 2)
+      }.to raise_error(ActiveRecord::ReadonlyAttributeError, /actortype_id/)
+
+      expect(actor.reload.actortype_id).to eq(Actor::COUNTRY_TYPE_ID)
+    end
+  end
+
+  describe 'validations' do
+    describe 'public_api only for countries' do
+      it 'allows public_api for countries when state is clean' do
+        actor = FactoryBot.build(:actor, actortype: country_actortype, public_api: true,
+                     is_archive: false, private: false, draft: false)
+        expect(actor).to be_valid
+      end
+
+      it 'rejects public_api for non-countries' do
+        actor = FactoryBot.build(:actor, actortype: not_country_actortype, public_api: true,
+                     is_archive: false, private: false, draft: false)
+        expect(actor).not_to be_valid
+        expect(actor.errors[:public_api]).to include('can only be set to true for countries (actortype_id = 1)')
+      end
+    end
+
+    describe 'public_api state requirements' do
+      it 'rejects public_api when archived' do
+        actor = FactoryBot.build(:actor, actortype: country_actortype,
+                     public_api: true, is_archive: true, private: false, draft: false)
+        expect(actor).not_to be_valid
+        expect(actor.errors[:public_api]).to include('and is_archive cannot both be true')
+      end
+
+      it 'rejects public_api when confidential' do
+        actor = FactoryBot.build(:actor, actortype: country_actortype,
+                     public_api: true, is_archive: false, private: true, draft: false)
+        expect(actor).not_to be_valid
+        expect(actor.errors[:public_api]).to include('and private cannot both be true')
+      end
+
+      it 'rejects public_api when draft' do
+        actor = FactoryBot.build(:actor, actortype: country_actortype,
+                     public_api: true, is_archive: false, private: false, draft: true)
+        expect(actor).not_to be_valid
+        expect(actor.errors[:public_api]).to include('and draft cannot both be true')
+      end
+    end
+
+    describe 'bidirectional validation errors' do
+      it 'shows error on is_archive when trying to archive public country' do
+        actor = FactoryBot.build(:actor, actortype: country_actortype,
+                     public_api: true, is_archive: true, private: false, draft: false)
+        expect(actor).not_to be_valid
+        expect(actor.errors[:is_archive]).to include('and public_api cannot both be true')
+      end
+
+      it 'shows error on private when trying to make public country confidential' do
+        actor = FactoryBot.build(:actor, actortype: country_actortype,
+                     public_api: true, is_archive: false, private: true, draft: false)
+        expect(actor).not_to be_valid
+        expect(actor.errors[:private]).to include('and public_api cannot both be true')
+      end
+
+      it 'shows error on draft when trying to draft public country' do
+        actor = FactoryBot.build(:actor, actortype: country_actortype,
+                     public_api: true, is_archive: false, private: false, draft: true)
+        expect(actor).not_to be_valid
+        expect(actor.errors[:draft]).to include('and public_api cannot both be true')
+      end
+    end
+  end
+
+  describe 'scopes' do
+    let!(:public_country) do
+      FactoryBot.create(:actor, public_api: true, actortype: country_actortype,
+             is_archive: false, private: false, draft: false)
+    end
+    let!(:private_country) do
+      FactoryBot.create(:actor, public_api: false, actortype: country_actortype,
+             is_archive: false, private: false, draft: false)
+    end
+    let!(:public_non_country) do
+      FactoryBot.create(:actor, public_api: false, actortype: not_country_actortype,
+             is_archive: false, private: false, draft: false)
+    end
+    let!(:archived_country) do
+      FactoryBot.create(:actor, public_api: false, actortype: country_actortype,
+             is_archive: true, private: false, draft: false)
+    end
+    let!(:draft_country) do
+      FactoryBot.create(:actor, public_api: false, actortype: country_actortype,
+             is_archive: false, private: false, draft: true)
+    end
+
+    describe '.public_countries' do
+      it 'returns only public countries with clean state' do
+        result = Actor.public_countries
+        expect(result).to include(public_country)
+        expect(result).not_to include(private_country)
+        expect(result).not_to include(public_non_country)
+        expect(result).not_to include(archived_country)
+        expect(result).not_to include(draft_country)
+      end
+    end
+  end
+
+  describe '#country?' do
+    it 'returns true for countries' do
+      actor = FactoryBot.build(:actor, actortype: country_actortype)
+      expect(actor.country?).to eq(true)
+    end
+
+    it 'returns false for non-countries' do
+      actor = FactoryBot.build(:actor, actortype: not_country_actortype)
+      expect(actor.country?).to eq(false)
+    end
+  end
+
+  describe '#publicly_accessible?' do
+    it 'returns true when all conditions met' do
+      actor = FactoryBot.build(:actor, public_api: true, actortype: country_actortype,
+                   is_archive: false, private: false, draft: false)
+      expect(actor.publicly_accessible?).to eq(true)
+    end
+
+    it 'returns false when not a country' do
+      actor = FactoryBot.build(:actor, public_api: true, actortype: not_country_actortype,
+                   is_archive: false, private: false, draft: false)
+      expect(actor.publicly_accessible?).to eq(false)
+    end
+
+    it 'returns false when not public_api' do
+      actor = FactoryBot.build(:actor, public_api: false, actortype: country_actortype,
+                   is_archive: false, private: false, draft: false)
+      expect(actor.publicly_accessible?).to eq(false)
+    end
+
+    it 'returns false when archived' do
+      actor = FactoryBot.build(:actor, public_api: true, actortype: country_actortype,
+                   is_archive: true, private: false, draft: false)
+      expect(actor.publicly_accessible?).to eq(false)
+    end
+
+    it 'returns false when confidential' do
+      actor = FactoryBot.build(:actor, public_api: true, actortype: country_actortype,
+                   is_archive: false, private: true, draft: false)
+      expect(actor.publicly_accessible?).to eq(false)
+    end
+
+    it 'returns false when draft' do
+      actor = FactoryBot.build(:actor, public_api: true, actortype: country_actortype,
+                   is_archive: false, private: false, draft: true)
+      expect(actor.publicly_accessible?).to eq(false)
+    end
+  end
+
 end

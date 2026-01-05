@@ -2,6 +2,7 @@ require "rails_helper"
 require "json"
 
 RSpec.describe MeasureMeasuresController, type: :controller do
+  let!(:statement_measuretype) { FactoryBot.create(:measuretype, :statement) }
   describe "Get index" do
     subject { get :index, format: :json }
 
@@ -11,7 +12,11 @@ RSpec.describe MeasureMeasuresController, type: :controller do
   end
 
   describe "Get show" do
-    let(:measure_measure) { FactoryBot.create(:measure_measure) }
+    let(:measure_measure) do
+      main_measure = FactoryBot.create(:measure, measuretype: statement_measuretype)
+      other_measure = FactoryBot.create(:measure, measuretype: main_measure.measuretype)
+      FactoryBot.create(:measure_measure, measure: main_measure, other_measure: other_measure)
+    end
     subject { get :show, params: {id: measure_measure}, format: :json }
 
     context "when not signed in" do
@@ -28,11 +33,21 @@ RSpec.describe MeasureMeasuresController, type: :controller do
     end
 
     context "when signed in" do
+      let!(:statement_measuretype) { FactoryBot.create(:measuretype, :statement) }
+
       let(:coordinator) { FactoryBot.create(:user, :coordinator) }
       let(:guest) { FactoryBot.create(:user) }
       let(:manager) { FactoryBot.create(:user, :manager) }
-      let(:measure) { FactoryBot.create(:measure) }
-      let(:other_measure) { FactoryBot.create(:measure) }
+
+      # Create the main measure
+      let(:measure) do
+        FactoryBot.create(:measure, measuretype: statement_measuretype)
+      end
+
+      # Create the other_measure, explicitly reusing the same measuretype
+      let(:other_measure) do
+        FactoryBot.create(:measure, measuretype: measure.measuretype)
+      end
 
       subject do
         post :create,
@@ -78,7 +93,11 @@ RSpec.describe MeasureMeasuresController, type: :controller do
         let(:user) { FactoryBot.create(:user) }
 
         context "with a measure_measure not belonging to the signed in user" do
-          let(:measure_measure) { FactoryBot.create(:measure_measure) }
+          let(:measure_measure) do
+            main_measure = FactoryBot.create(:measure, measuretype: statement_measuretype)
+            other_measure = FactoryBot.create(:measure, measuretype: main_measure.measuretype)
+            FactoryBot.create(:measure_measure, measure: main_measure, other_measure: other_measure)
+          end
 
           it "will not allow you to delete a measure_measure" do
             expect(subject).to be_forbidden
@@ -86,7 +105,11 @@ RSpec.describe MeasureMeasuresController, type: :controller do
         end
 
         context "with a measure_measure belonging to the signed in user" do
-          let(:measure_measure) { FactoryBot.create(:measure_measure, created_by: user) }
+          let(:measure_measure) do
+            main_measure = FactoryBot.create(:measure, measuretype: statement_measuretype)
+            other_measure = FactoryBot.create(:measure, measuretype: main_measure.measuretype)
+            FactoryBot.create(:measure_measure, measure: main_measure, other_measure: other_measure, created_by: user)
+          end
 
           it "will not allow you to delete a measure_measure" do
             expect(subject).to be_forbidden
@@ -98,7 +121,11 @@ RSpec.describe MeasureMeasuresController, type: :controller do
         let(:user) { FactoryBot.create(:user, :manager) }
 
         context "with a measure_measure not belonging to the signed in user" do
-          let(:measure_measure) { FactoryBot.create(:measure_measure) }
+          let(:measure_measure) do
+            main_measure = FactoryBot.create(:measure, measuretype: statement_measuretype)
+            other_measure = FactoryBot.create(:measure, measuretype: main_measure.measuretype)
+            FactoryBot.create(:measure_measure, measure: main_measure, other_measure: other_measure)
+          end
 
           it "will not allow you to delete a measure_measure" do
             expect(subject).to be_forbidden
@@ -106,7 +133,11 @@ RSpec.describe MeasureMeasuresController, type: :controller do
         end
 
         context "with a measure_measure belonging to the signed in user" do
-          let(:measure_measure) { FactoryBot.create(:measure_measure, created_by: user) }
+          let(:measure_measure) do
+            main_measure = FactoryBot.create(:measure, measuretype: statement_measuretype)
+            other_measure = FactoryBot.create(:measure, measuretype: main_measure.measuretype)
+            FactoryBot.create(:measure_measure, measure: main_measure, other_measure: other_measure, created_by: user)
+          end
 
           it "will allow you to delete a measure_measure" do
             expect(subject).to be_no_content
@@ -118,7 +149,11 @@ RSpec.describe MeasureMeasuresController, type: :controller do
         let(:user) { FactoryBot.create(:user, :coordinator) }
 
         context "with a measure_measure not belonging to the signed in user" do
-          let(:measure_measure) { FactoryBot.create(:measure_measure) }
+          let(:measure_measure) do
+            main_measure = FactoryBot.create(:measure, measuretype: statement_measuretype)
+            other_measure = FactoryBot.create(:measure, measuretype: main_measure.measuretype)
+            FactoryBot.create(:measure_measure, measure: main_measure, other_measure: other_measure)
+          end
 
           it "will not allow you to delete a measure_measure" do
             expect(subject).to be_forbidden
@@ -126,7 +161,11 @@ RSpec.describe MeasureMeasuresController, type: :controller do
         end
 
         context "with a measure_measure belonging to the signed in user" do
-          let(:measure_measure) { FactoryBot.create(:measure_measure, created_by: user) }
+          let(:measure_measure) do
+            main_measure = FactoryBot.create(:measure, measuretype: statement_measuretype)
+            other_measure = FactoryBot.create(:measure, measuretype: main_measure.measuretype)
+            FactoryBot.create(:measure_measure, measure: main_measure, other_measure: other_measure, created_by: user)
+          end
 
           it "will allow you to delete a measure_measure" do
             expect(subject).to be_no_content
@@ -138,7 +177,11 @@ RSpec.describe MeasureMeasuresController, type: :controller do
         let(:user) { FactoryBot.create(:user, :admin) }
 
         context "with a measure_measure not belonging to the signed in user" do
-          let(:measure_measure) { FactoryBot.create(:measure_measure) }
+          let(:measure_measure) do
+            main_measure = FactoryBot.create(:measure, measuretype: statement_measuretype)
+            other_measure = FactoryBot.create(:measure, measuretype: main_measure.measuretype)
+            FactoryBot.create(:measure_measure, measure: main_measure, other_measure: other_measure)
+          end
 
           it "will allow you to delete a measure_measure" do
             expect(subject).to be_no_content
@@ -146,7 +189,11 @@ RSpec.describe MeasureMeasuresController, type: :controller do
         end
 
         context "with a measure_measure belonging to the signed in user" do
-          let(:measure_measure) { FactoryBot.create(:measure_measure, created_by: user) }
+          let(:measure_measure) do
+            main_measure = FactoryBot.create(:measure, measuretype: statement_measuretype)
+            other_measure = FactoryBot.create(:measure, measuretype: main_measure.measuretype)
+            FactoryBot.create(:measure_measure, measure: main_measure, other_measure: other_measure, created_by: user)
+          end
 
           it "will allow you to delete a measure_measure" do
             expect(subject).to be_no_content

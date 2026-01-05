@@ -214,6 +214,62 @@ RSpec.describe ActorsController, type: :controller do
         end
       end
 
+      context "public_api" do
+      let(:country_actortype) { FactoryBot.create(:actortype, id: Actor::COUNTRY_TYPE_ID, title: "Country") }
+      let(:params) do
+        {
+          actor: {
+            code: "test",
+            title: "test",
+            description: "test",
+            actortype_id: country_actortype.id,
+            target_date: "today",
+            public_api: true,
+            draft: false,
+            is_archive: false,
+            private: false
+          }
+        }
+      end
+
+      it "can't be set by manager" do
+        sign_in manager
+        expect(subject).to be_created
+        expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq false
+      end
+
+      it "can be set by admin for countries" do
+        sign_in admin
+        expect(subject).to be_created
+        expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
+      end
+
+      context "for non-countries" do
+        let(:params) do
+          {
+            actor: {
+              code: "test",
+              title: "test",
+              description: "test",
+              actortype_id: actortype.id,
+              target_date: "today",
+              public_api: true,
+              draft: false,
+              is_archive: false,
+              private: false
+            }
+          }
+        end
+
+        it "will be rejected by validation" do
+          sign_in admin
+          expect(subject).to have_http_status(422)
+          json = JSON.parse(subject.body)
+          expect(json["public_api"]).to be_present
+        end
+      end
+    end
+
       it "will record what manager created the actor", versioning: true do
         expect(PaperTrail).to be_enabled
         sign_in manager
@@ -278,6 +334,45 @@ RSpec.describe ActorsController, type: :controller do
         it "can be set by admin" do
           sign_in admin
           expect(JSON.parse(subject.body).dig("data", "attributes", "is_archive")).to eq true
+        end
+      end
+
+      context "public_api" do
+        let(:country_actortype) { FactoryBot.create(:actortype, id: Actor::COUNTRY_TYPE_ID, title: "Country") }
+        let(:actor) { FactoryBot.create(:actor, actortype: country_actortype, draft: false, is_archive: false, private: false) }
+
+        subject do
+          put :update, format: :json, params: {
+            id: actor,
+            actor: {
+              public_api: true,
+              draft: false,
+              is_archive: false,
+              private: false
+            }
+          }
+        end
+
+        it "can't be set by manager" do
+          sign_in manager
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq false
+        end
+
+        it "can be set by admin for countries" do
+          sign_in admin
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
+        end
+
+        context "attempting to set for non-country" do
+          let(:non_country_actortype) { FactoryBot.create(:actortype, :not_a_country) }
+          let(:actor) { FactoryBot.create(:actor, actortype: non_country_actortype, draft: false, is_archive: false, private: false) }
+
+          it "will be rejected by validation" do
+            sign_in admin
+            expect(subject).to have_http_status(422)
+            json = JSON.parse(subject.body)
+            expect(json.dig("error", "public_api")).to be_present  # Use .dig for PUT
+          end
         end
       end
 
