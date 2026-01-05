@@ -2,11 +2,8 @@ require "rails_helper"
 
 RSpec.describe Measure, type: :model do
   it { is_expected.to validate_presence_of :title }
-  it { is_expected.to have_many :recommendations }
   it { is_expected.to have_many :categories }
   it { is_expected.to have_many :indicators }
-  it { is_expected.to have_many :due_dates }
-  it { is_expected.to have_many :progress_reports }
 
   it "is expected to default private to false" do
     expect(subject.private).to eq(false)
@@ -69,7 +66,6 @@ RSpec.describe Measure, type: :model do
       FactoryBot.create(:measure_actor, measure: measure)
       FactoryBot.create(:measure_measure, measure: measure)
       FactoryBot.create(:measure_resource, measure: measure)
-      FactoryBot.create(:recommendation_measure, measure: measure)
       FactoryBot.create(:user_measure, measure: measure)
 
       expect { measure.destroy }.to change {
@@ -81,10 +77,9 @@ RSpec.describe Measure, type: :model do
           MeasureResource.count,
           ActorMeasure.count,
           MeasureActor.count,
-          RecommendationMeasure.count,
           UserMeasure.count
         ]
-      }.from([2, 1, 1, 1, 1, 1, 1, 1, 1]).to([1, 0, 0, 0, 0, 0, 0, 0, 0])
+      }.from([2, 1, 1, 1, 1, 1, 1, 1]).to([1, 0, 0, 0, 0, 0, 0, 0])
     end
 
     it "is expected to cascade destroy other_measure_measures relationships" do

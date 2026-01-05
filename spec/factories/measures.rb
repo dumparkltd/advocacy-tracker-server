@@ -13,10 +13,6 @@ FactoryBot.define do
       draft { false }
     end
 
-    trait :without_recommendation do
-      recommendations { [] }
-    end
-
     trait :without_category do
       categories { [] }
     end

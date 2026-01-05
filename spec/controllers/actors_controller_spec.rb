@@ -152,7 +152,6 @@ RSpec.describe ActorsController, type: :controller do
     end
 
     context "when signed in" do
-      let(:recommendation) { FactoryBot.create(:recommendation) }
       let(:category) { FactoryBot.create(:category) }
       let(:actortype) { FactoryBot.create(:actortype) }
       let(:params) do

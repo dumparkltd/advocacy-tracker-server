@@ -5,14 +5,10 @@ RSpec.describe Category, type: :model do
   it { is_expected.to belong_to :taxonomy }
   it { is_expected.to belong_to(:manager).optional }
   it { is_expected.to belong_to(:category).optional }
-  it { is_expected.to have_many :recommendations }
   it { is_expected.to have_many :users }
   it { is_expected.to have_many :measures }
   it { is_expected.to have_many :indicators }
-  it { is_expected.to have_many :progress_reports }
-  it { is_expected.to have_many :due_dates }
   it { is_expected.to have_many :categories }
-  it { is_expected.to have_many :children_due_dates }
 
   it "is expected to default private to false" do
     expect(subject.private).to eq(false)
@@ -73,7 +69,6 @@ RSpec.describe Category, type: :model do
       category = FactoryBot.create(:category, taxonomy: taxonomy)
       FactoryBot.create(:actor_category, actor: actor, category: category)
       FactoryBot.create(:user_category, category: category)
-      FactoryBot.create(:recommendation_category, category: category)
 
       FactoryBot.create(:measure_category,
         category: category,
@@ -84,10 +79,9 @@ RSpec.describe Category, type: :model do
           Category.count,
           ActorCategory.count,
           UserCategory.count,
-          RecommendationCategory.count,
           MeasureCategory.count
         ]
-      }.from([1, 1, 1, 1, 1]).to([0, 0, 0, 0, 0])
+      }.from([1, 1, 1, 1]).to([0, 0, 0, 0])
     end
   end
 end

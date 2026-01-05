@@ -124,8 +124,6 @@ RSpec.describe MeasuresController, type: :controller do
     context "filters" do
       let(:category) { FactoryBot.create(:category) }
       let(:measure_different_category) { FactoryBot.create(:measure) }
-      let(:recommendation) { FactoryBot.create(:recommendation) }
-      let(:measure_different_recommendation) { FactoryBot.create(:measure) }
       let(:indicator) { FactoryBot.create(:indicator) }
       let(:measure_different_indicator) { FactoryBot.create(:measure) }
 
@@ -140,15 +138,6 @@ RSpec.describe MeasuresController, type: :controller do
           json = JSON.parse(subject.body)
           expect(json["data"].length).to eq(1)
           expect(json["data"][0]["id"]).to eq(measure_different_category.id.to_s)
-        end
-
-        it "filters from recommendation" do
-          sign_in manager
-          measure_different_recommendation.recommendations << recommendation
-          subject = get :index, params: {recommendation_id: recommendation.id}, format: :json
-          json = JSON.parse(subject.body)
-          expect(json["data"].length).to eq(1)
-          expect(json["data"][0]["id"]).to eq(measure_different_recommendation.id.to_s)
         end
 
         it "filters from indicator" do
@@ -212,7 +201,6 @@ RSpec.describe MeasuresController, type: :controller do
     end
 
     context "when signed in" do
-      let(:recommendation) { FactoryBot.create(:recommendation) }
       let(:category) { FactoryBot.create(:category) }
       let(:measuretype) { FactoryBot.create(:measuretype) }
       let(:params) do
@@ -227,18 +215,6 @@ RSpec.describe MeasuresController, type: :controller do
       end
 
       subject { post :create, format: :json, params: params }
-
-      # This is an example creating a new recommendation record in the post
-      # post :create,
-      #      format: :json,
-      #      params: {
-      #        measure: {
-      #          title: 'test',
-      #          description: 'test',
-      #          target_date: 'today',
-      #          recommendation_measures_attributes: [ { recommendation_attributes: { title: 'test 1', number: 1 } } ]
-      #        }
-      #      }
 
       it "will not allow a guest to create a measure" do
         sign_in guest
@@ -373,14 +349,9 @@ RSpec.describe MeasuresController, type: :controller do
           comment
           date_comment
           description
-          has_reference_landbased_ml
-          indicator_summary
           outcome
           private
-          reference_landbased_ml
-          reference_ml
           status_comment
-          status_lbs_protocol
           target_comment
           target_date_comment
           target_date
