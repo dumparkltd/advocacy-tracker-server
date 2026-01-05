@@ -1,4 +1,7 @@
 class Actor < VersionedRecord
+  # Type constants matching seed data
+  COUNTRY_TYPE_ID = 1
+
   belongs_to :actortype, required: true
   belongs_to :manager, class_name: "User", required: false
   belongs_to :parent, class_name: "Actor", required: false
@@ -23,8 +26,36 @@ class Actor < VersionedRecord
 
   belongs_to :relationship_updated_by, class_name: "User", required: false
 
+  # Make type immutable after creation
+  attr_readonly :actortype_id
+
+  # Scope - only public countries
+  scope :public_countries, -> {
+    where(
+      public_api: true,
+      actortype_id: COUNTRY_TYPE_ID,
+      is_archive: false,
+      private: false,
+      draft: false
+    )
+  }
+
+  # Validations
   validates :title, presence: true
   validate :different_parent, :not_own_descendant
+  validate :public_api_only_for_countries
+  validate :public_api_requires_clean_state
+  validate :is_archive_requires_unpublished
+  validate :private_requires_unpublished
+  validate :draft_requires_unpublished
+
+  def publicly_accessible?
+    public_api? && country? && !is_archive? && !private? && !draft?
+  end
+
+  def country?
+    actortype_id == COUNTRY_TYPE_ID
+  end
 
   private
 
@@ -38,6 +69,38 @@ class Actor < VersionedRecord
     measure_parent = self
     while (measure_parent = measure_parent.parent)
       errors.add(:parent_id, "can't be its own descendant") if measure_parent.id == id
+    end
+  end
+
+  def public_api_only_for_countries
+    if public_api? && !country?
+      errors.add(:public_api, 'can only be set to true for countries (actortype_id = 1)')
+    end
+  end
+
+  def public_api_requires_clean_state
+    if public_api?
+      errors.add(:public_api, 'and is_archive cannot both be true') if is_archive?
+      errors.add(:public_api, 'and private cannot both be true') if private?
+      errors.add(:public_api, 'and draft cannot both be true') if draft?
+    end
+  end
+
+  def is_archive_requires_unpublished
+    if is_archive? && public_api?
+      errors.add(:is_archive, 'and public_api cannot both be true')
+    end
+  end
+
+  def private_requires_unpublished
+    if private? && public_api?
+      errors.add(:private, 'and public_api cannot both be true')
+    end
+  end
+
+  def draft_requires_unpublished
+    if draft? && public_api?
+      errors.add(:draft, 'and public_api cannot both be true')
     end
   end
 end

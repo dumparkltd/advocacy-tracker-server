@@ -5,22 +5,7 @@ class MeasureCategoryPolicy < ApplicationPolicy
     [
       :category_id,
       :measure_id,
-      measure_attributes: [
-        :description,
-        :draft,
-        :target_date,
-        :title
-      ],
-      category_attributes: [
-        :description,
-        :draft,
-        :id,
-        :manager_id,
-        :short_title,
-        :taxonomy_id,
-        :title,
-        :url
-      ]
+      :updated_by_id
     ]
   end
 

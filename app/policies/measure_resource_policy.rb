@@ -4,7 +4,8 @@ class MeasureResourcePolicy < ApplicationPolicy
   def permitted_attributes
     [
       :measure_id,
-      :resource_id
+      :resource_id,
+      :updated_by_id
     ]
   end
 

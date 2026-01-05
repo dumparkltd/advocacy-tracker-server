@@ -6,8 +6,7 @@ class MeasureIndicatorPolicy < ApplicationPolicy
       :measure_id,
       :indicator_id,
       :supportlevel_id,
-      measure_attributes: [:id, :title, :description, :target_date, :draft],
-      indicator_attributes: [:id, :title, :description, :draft]
+      :updated_by_id
     ]
   end
 end

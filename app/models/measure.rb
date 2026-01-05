@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class Measure < VersionedRecord
+  # Type constants matching seed data
+  STATEMENT_TYPE_ID = 1
+
   has_many :recommendation_measures, inverse_of: :measure, dependent: :destroy
   has_many :measure_categories, inverse_of: :measure, dependent: :destroy
   has_many :measure_indicators, inverse_of: :measure, dependent: :destroy
@@ -32,8 +35,19 @@ class Measure < VersionedRecord
 
   belongs_to :relationship_updated_by, class_name: "User", required: false
 
-  accepts_nested_attributes_for :recommendation_measures
-  accepts_nested_attributes_for :measure_categories
+  # Make type immutable after creation
+  attr_readonly :measuretype_id
+
+  # Scope - only public statements
+  scope :public_statements, -> {
+    where(
+      public_api: true,
+      measuretype_id: STATEMENT_TYPE_ID,
+      is_archive: false,
+      private: false,
+      draft: false
+    )
+  }
 
   validates :title, presence: true
   validates :measuretype_id, presence: true
@@ -42,6 +56,11 @@ class Measure < VersionedRecord
     :not_own_descendant,
     :parent_id_allowed_by_measuretype
   )
+  validate :public_api_only_for_statements
+  validate :public_api_requires_clean_state
+  validate :is_archive_requires_unpublished
+  validate :private_requires_unpublished
+  validate :draft_requires_unpublished
 
   def self.notifiable_attribute_names
     Measure.attribute_names - %w[updated_at]
@@ -79,6 +98,14 @@ class Measure < VersionedRecord
 
   def task?
     measuretype&.notifications?
+  end
+
+  def publicly_accessible?
+    public_api? && measuretype_id == STATEMENT_TYPE_ID
+  end
+
+  def statement?
+    measuretype_id == STATEMENT_TYPE_ID
   end
 
   private
@@ -120,5 +147,37 @@ class Measure < VersionedRecord
 
   def relationship_updated?
     saved_change_to_attribute?(:relationship_updated_at)
+  end
+
+  def public_api_only_for_statements
+    if public_api? && !statement?
+      errors.add(:public_api, 'can only be set to true for statements (measuretype_id = 1)')
+    end
+  end
+
+  def public_api_requires_clean_state
+    if public_api?
+      errors.add(:public_api, 'and is_archive cannot both be true') if is_archive?
+      errors.add(:public_api, 'and private cannot both be true') if private?
+      errors.add(:public_api, 'and draft cannot both be true') if draft?
+    end
+  end
+
+  def is_archive_requires_unpublished
+    if is_archive? && public_api?
+      errors.add(:is_archive, 'and public_api cannot both be true')
+    end
+  end
+
+  def private_requires_unpublished
+    if private? && public_api?
+      errors.add(:private, 'and public_api cannot both be true')
+    end
+  end
+
+  def draft_requires_unpublished
+    if draft? && public_api?
+      errors.add(:draft, 'and public_api cannot both be true')
+    end
   end
 end

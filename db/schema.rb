@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_05_124838) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -64,6 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
     t.decimal "population"
     t.string "prefix"
     t.boolean "private", default: false
+    t.boolean "public_api", default: false, null: false
     t.datetime "relationship_updated_at"
     t.bigint "relationship_updated_by_id"
     t.string "title", null: false
@@ -74,6 +75,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
     t.index ["created_by_id"], name: "index_actors_on_created_by_id"
     t.index ["manager_id"], name: "index_actors_on_manager_id"
     t.index ["parent_id"], name: "index_actors_on_parent_id"
+    t.index ["public_api"], name: "index_actors_on_public_api"
     t.index ["updated_by_id"], name: "index_actors_on_updated_by_id"
   end
 
@@ -182,6 +184,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
     t.boolean "is_archive", default: false
     t.integer "manager_id"
     t.boolean "private", default: false
+    t.boolean "public_api", default: false, null: false
     t.string "reference"
     t.datetime "relationship_updated_at"
     t.bigint "relationship_updated_by_id"
@@ -193,6 +196,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
     t.index ["created_at"], name: "index_indicators_on_created_at"
     t.index ["draft"], name: "index_indicators_on_draft"
     t.index ["manager_id"], name: "index_indicators_on_manager_id"
+    t.index ["public_api"], name: "index_indicators_on_public_api"
   end
 
   create_table "measure_actors", force: :cascade do |t|
@@ -280,6 +284,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
     t.text "outcome"
     t.bigint "parent_id"
     t.boolean "private", default: false
+    t.boolean "public_api", default: false, null: false
     t.string "reference_landbased_ml"
     t.string "reference_ml"
     t.datetime "relationship_updated_at"
@@ -296,6 +301,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
     t.index ["draft"], name: "index_measures_on_draft"
     t.index ["measuretype_id"], name: "index_measures_on_measuretype_id"
     t.index ["parent_id"], name: "index_measures_on_parent_id"
+    t.index ["public_api"], name: "index_measures_on_public_api"
   end
 
   create_table "measuretype_taxonomies", force: :cascade do |t|

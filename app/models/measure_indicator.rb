@@ -1,14 +1,22 @@
 class MeasureIndicator < ApplicationRecord
   belongs_to :measure
   belongs_to :indicator
-  accepts_nested_attributes_for :measure
-  accepts_nested_attributes_for :indicator
 
   validates :measure_id, uniqueness: {scope: :indicator_id}
   validates :measure_id, presence: true
   validates :indicator_id, presence: true
 
   after_commit :set_relationship_updated, on: [:create, :update, :destroy]
+
+  scope :public_api, -> {
+    joins(:measure, :indicator)
+      .merge(Measure.public_statements)
+      .where(indicators: { public_api: true, is_archive: false, private: false, draft: false })
+  }
+
+  def publicly_accessible?
+    measure&.publicly_accessible? && indicator&.publicly_accessible?
+  end
 
   private
 

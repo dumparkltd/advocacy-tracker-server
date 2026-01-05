@@ -2,12 +2,11 @@
 
 class UserCategoryPolicy < ApplicationPolicy
   def permitted_attributes
-    [:user_id,
+    [
+      :user_id,
       :category_id,
-      category_attributes: [:id, :title, :short_title, :description, :url,
-        :taxonomy_id,
-        :draft,
-        :manager_id]]
+      :updated_by_id
+    ]
   end
 
   def update?

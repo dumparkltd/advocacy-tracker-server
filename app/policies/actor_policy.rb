@@ -4,7 +4,8 @@ class ActorPolicy < ApplicationPolicy
   def permitted_attributes
     [
       :activity_summary,
-      :actortype_id,
+      # actortype_id only on create
+      (@record.new_record? ? :actortype_id : nil),
       :address,
       :code,
       :description,
@@ -19,7 +20,10 @@ class ActorPolicy < ApplicationPolicy
       :private,
       :title,
       :url,
-      (:is_archive if @user.role?("admin"))
+      :updated_by_id,
+      # only for admins
+      (@user.role?("admin") ? :is_archive : nil),
+      (@user.role?("admin") ? :public_api : nil)
     ].compact
   end
 end

@@ -5,28 +5,7 @@ class ActorCategoryPolicy < ApplicationPolicy
     [
       :category_id,
       :actor_id,
-      actor_attributes: [
-        :activity_summary,
-        :actortype_id,
-        :code,
-        :description,
-        :draft,
-        :gdp,
-        :population,
-        :private,
-        :title,
-        :url
-      ],
-      category_attributes: [
-        :description,
-        :draft,
-        :id,
-        :manager_id,
-        :short_title,
-        :taxonomy_id,
-        :title,
-        :url
-      ]
+      :updated_by_id
     ]
   end
 

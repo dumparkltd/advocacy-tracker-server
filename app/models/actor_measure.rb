@@ -5,6 +5,16 @@ class ActorMeasure < VersionedRecord
   validate :actor_actortype_is_active
   after_commit :set_relationship_updated, on: [:create, :update, :destroy]
 
+  scope :public_api, -> {
+    joins(:actor, :measure)
+      .merge(Actor.public_countries)
+      .merge(Measure.public_statements)
+  }
+
+  def publicly_accessible?
+    actor&.publicly_accessible? && measure&.publicly_accessible?
+  end
+
   private
 
   def actor_actortype_is_active
