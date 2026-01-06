@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_06_164604) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_06_182709) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -288,10 +288,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_06_164604) do
     t.bigint "parent_id"
     t.boolean "private", default: false
     t.boolean "public_api", default: false, null: false
+    t.text "quote_api"
     t.string "reference_landbased_ml"
     t.string "reference_ml"
     t.datetime "relationship_updated_at"
     t.bigint "relationship_updated_by_id"
+    t.text "source_api"
     t.string "status_comment"
     t.string "status_lbs_protocol"
     t.string "target_comment"

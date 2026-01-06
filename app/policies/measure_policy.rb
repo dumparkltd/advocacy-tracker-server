@@ -25,6 +25,8 @@ class MeasurePolicy < ApplicationPolicy
       :title,
       :url,
       :updated_by_id,
+      :quote_api,
+      :source_api,
       # only for admins
       (@user.role?("admin") ? :is_archive : nil),
       (@user.role?("admin") ? :public_api : nil)
