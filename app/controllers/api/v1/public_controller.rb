@@ -3,8 +3,6 @@
 module Api
   module V1
     class PublicController < ActionController::API
-      skip_before_action :authenticate_user!
-
       def topics
         indicators = Indicator.where(
           public_api: true,
