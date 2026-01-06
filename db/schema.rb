@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_05_124838) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_06_164604) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -174,6 +174,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_05_124838) do
   end
 
   create_table "indicators", id: :serial, force: :cascade do |t|
+    t.text "annotation_api"
     t.string "code"
     t.datetime "created_at", precision: nil, null: false
     t.integer "created_by_id"
@@ -189,7 +190,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_05_124838) do
     t.datetime "relationship_updated_at"
     t.bigint "relationship_updated_by_id"
     t.boolean "repeat", default: false
+    t.text "short_api"
     t.date "start_date"
+    t.text "teaser_api"
     t.text "title", null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "updated_by_id"

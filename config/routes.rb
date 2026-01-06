@@ -30,6 +30,12 @@ Rails.application.routes.draw do
   resources :resources
   resources :bookmarks
 
+  # public routes - separate from client API
+  namespace :api do
+    namespace :v1 do
+      get 'public/topics', to: 'public#topics'
+    end
+  end
 
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 

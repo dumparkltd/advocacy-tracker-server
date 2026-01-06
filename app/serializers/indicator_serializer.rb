@@ -15,6 +15,9 @@ class IndicatorSerializer
     :private,
     :is_archive,
     :public_api,
+    :teaser_api,
+    :annotation_api,
+    :short_api,
     :relationship_updated_at,
     :relationship_updated_by_id
   )

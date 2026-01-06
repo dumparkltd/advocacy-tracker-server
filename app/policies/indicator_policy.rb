@@ -10,6 +10,9 @@ class IndicatorPolicy < ApplicationPolicy
       :reference,
       :private,
       :updated_by_id,
+      :teaser_api,
+      :annotation_api,
+      :short_api,
       (@user.role?("admin") ? :is_archive : nil),
       (@user.role?("admin") ? :public_api : nil)
     ].compact
