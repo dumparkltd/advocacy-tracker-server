@@ -37,27 +37,27 @@ class Indicator < VersionedRecord
 
   def public_api_requires_clean_state
     if public_api?
-      errors.add(:public_api, 'and is_archive cannot both be true') if is_archive?
-      errors.add(:public_api, 'and private cannot both be true') if private?
-      errors.add(:public_api, 'and draft cannot both be true') if draft?
+      errors.add(:public_api, 'Cannot be enabled when record is archived') if is_archive?
+      errors.add(:public_api, 'Cannot be enabled when record is confidential') if private?
+      errors.add(:public_api, 'Cannot be enabled when record is in draft') if draft?
     end
   end
 
   def is_archive_requires_unpublished
     if is_archive? && public_api?
-      errors.add(:is_archive, 'and public_api cannot both be true')
+      errors.add(:is_archive, 'Record cannot be archived when published to GPN')
     end
   end
 
   def private_requires_unpublished
     if private? && public_api?
-      errors.add(:private, 'and public_api cannot both be true')
+      errors.add(:private, 'Record cannot be marked confidential when published to GPN')
     end
   end
 
   def draft_requires_unpublished
     if draft? && public_api?
-      errors.add(:draft, 'and public_api cannot both be true')
+      errors.add(:draft, 'Record cannot be marked as draft when published to GPN')
     end
   end
 
