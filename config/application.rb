@@ -25,6 +25,7 @@ module HumanRightsNationalReporting
     # config.eager_load_paths << Rails.root.join("extras")
 
     config.api_only = true
+    config.active_storage.variant_processor = :disabled
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do
