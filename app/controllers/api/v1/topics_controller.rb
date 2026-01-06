@@ -2,8 +2,8 @@
 
 module Api
   module V1
-    class PublicController < ActionController::API
-      def topics
+    class TopicsController < ActionController::API
+      def index
         indicators = Indicator.where(
           public_api: true,
           is_archive: false,

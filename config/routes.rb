@@ -33,7 +33,8 @@ Rails.application.routes.draw do
   # public routes - separate from client API
   namespace :api do
     namespace :v1 do
-      get 'public/topics', to: 'public#topics'
+      get 'public/topics', to: 'topics#index'
+      get 'public/statements', to: 'statements#index'
     end
   end
 
