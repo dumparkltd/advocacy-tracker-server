@@ -5,9 +5,6 @@ class ApplicationController < ActionController::API
   include Pundit::Authorization
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
-  protect_from_forgery with: :exception
-  protect_from_forgery with: :null_session, if: proc { |c| c.request.format == "application/json" }
-
   layout :layout_by_resource
 
   before_action :authenticate_user!, only: [:create, :update, :destroy], unless: :devise_controller?
