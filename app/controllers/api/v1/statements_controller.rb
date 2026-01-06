@@ -65,7 +65,7 @@ module Api
         when 3 then 0 # "on the fence" > "no support"
         when 4 then -1 # "sceptical" > "no support*"
         when 5 then -1 # "opponent" > "no support*"
-        when 99 then 0 > # "no statement" > "no support"
+        when 99 then 0 # "no statement" > "no support"
         else 0 # "no support"
         end
       end
