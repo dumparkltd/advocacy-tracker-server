@@ -157,9 +157,9 @@ class Measure < VersionedRecord
 
   def public_api_requires_clean_state
     if public_api?
-      errors.add(:public_api, 'Cannot be enabled when record is archived') if is_archive?
-      errors.add(:public_api, 'Cannot be enabled when record is confidential') if private?
-      errors.add(:public_api, 'Cannot be enabled when record is in draft') if draft?
+      errors.add(:public_api, 'Cannot be published to GPN when record is archived') if is_archive?
+      errors.add(:public_api, 'Cannot be published to GPN when record is confidential') if private?
+      errors.add(:public_api, 'Cannot be published to GPN when record is in draft') if draft?
     end
   end
 
