@@ -36,6 +36,7 @@ Rails.application.routes.draw do
       get 'public/topics', to: 'topics#index'
       get 'public/statements', to: 'statements#index'
       get 'public/countries', to: 'countries#index'
+      get 'public/country-statements', to: 'country_statements#index'
     end
   end
 

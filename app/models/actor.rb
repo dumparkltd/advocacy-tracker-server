@@ -1,6 +1,7 @@
 class Actor < VersionedRecord
   # Type constants matching seed data
   COUNTRY_TYPE_ID = 1
+  GROUP_TYPE_ID = 5
 
   belongs_to :actortype, required: true
   belongs_to :manager, class_name: "User", required: false
