@@ -18,7 +18,7 @@ module Api
               gpat_id: country.id,
               code: country.code,
               name: country.title,
-              updated_at: country.updated_at,
+              updated_at: country.updated_at
             }
           end.to_json
         end

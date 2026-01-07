@@ -26,8 +26,9 @@ module Api
               teaser: topic.teaser_api,
               annotation: topic.annotation_api,
               short_title: topic.short_api,
-              updated_at: topic.updated_at,
+              updated_at: topic.updated_at
             }
+          end.to_json
         end
 
         render json: json
