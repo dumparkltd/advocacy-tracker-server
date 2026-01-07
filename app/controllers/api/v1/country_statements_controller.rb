@@ -55,7 +55,12 @@ module Api
             .joins("INNER JOIN measures ON measures.id = actor_measures.measure_id")
             .joins("INNER JOIN memberships ON memberships.memberof_id = groups.id")
             .joins("INNER JOIN actors AS countries ON countries.id = memberships.member_id")
-            .where(groups: { actortype_id: Actor::GROUP_TYPE_ID })
+            .where(groups: {
+              actortype_id: Actor::GROUP_TYPE_ID,
+              is_archive: false,
+              private: false,
+              draft: false
+            })
             .where(countries: { id: countries.pluck(:id) })
             .where(measures: { id: statements.pluck(:id) })
             .select(
