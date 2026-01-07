@@ -27,7 +27,7 @@ module Api
           # 1. Direct country-statement relationships
           direct_relationships = ActorMeasure
             .joins("INNER JOIN actors ON actors.id = actor_measures.actor_id")
-            .joins("INNER JOIN measures ON statements.id = actor_measures.measure_id")
+            .joins("INNER JOIN measures ON measures.id = actor_measures.measure_id")
             .where(actors: { id: countries.pluck(:id) })
             .where(measures: { id: statements.pluck(:id) })
             .select(
