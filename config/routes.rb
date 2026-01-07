@@ -35,6 +35,7 @@ Rails.application.routes.draw do
     namespace :v1 do
       get 'public/topics', to: 'topics#index'
       get 'public/statements', to: 'statements#index'
+      get 'public/countries', to: 'countries#index'
     end
   end
 

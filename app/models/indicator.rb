@@ -22,6 +22,15 @@ class Indicator < VersionedRecord
   belongs_to :manager, class_name: "User", foreign_key: :manager_id, required: false
   belongs_to :relationship_updated_by, class_name: "User", required: false
 
+  scope :public_topics, -> {
+    where(
+      public_api: true,
+      is_archive: false,
+      private: false,
+      draft: false
+    )
+  }
+
   # Validations
   validate :public_api_requires_clean_state
   validate :is_archive_requires_unpublished

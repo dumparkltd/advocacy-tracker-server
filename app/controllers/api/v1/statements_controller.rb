@@ -3,49 +3,42 @@ module Api
   module V1
     class StatementsController < ActionController::API
       def index
-        measures = Measure.where(
-          measuretype_id: 1,
-          public_api: true,
-          is_archive: false,
-          private: false,
-          draft: false
-        ).includes(measure_indicators: :indicator)
+        statements = Measure
+          .public_statements
+          .includes(measure_indicators: :indicator)
 
-        public_topics = Indicator.where(
-          public_api: true,
-          is_archive: false,
-          private: false,
-          draft: false
-        ).pluck(:id)
+        topics = Indicator.public_topics.pluck(:id)
 
         expires_in 0, public: true
         fresh_when(
-          etag: measures.maximum(:updated_at),
-          last_modified: measures.maximum(:updated_at)
+          etag: statements.maximum(:updated_at),
+          last_modified: statements.maximum(:updated_at)
         )
 
-        cache_key = "public/v1/statements/#{measures.maximum(:updated_at).to_i}/#{measures.count}"
+        cache_key = "public/v1/statements/#{statements.maximum(:updated_at).to_i}/#{statements.count}"
         json = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
-          measures.order(:code).map do |measure|
+          statements.order(:code).map do |statement|
             result = {
-              title: measure.title,
-              date: measure.date_start,
-              url: measure.url,
-              quote_api: measure.quote_api,
-              source_api: measure.source_api,
-              updated_at: measure.updated_at
+              gpat_id: statement.id,
+              code: statement.code,
+              title: statement.title,
+              date: statement.date_start,
+              url: statement.url,
+              quote: statement.quote_api,
+              source: statement.source_api,
+              updated_at: statement.updated_at
             }
 
             # Initialize ALL public topic positions as null
-            public_topics.each do |topic_id|
+            topics.each do |topic_id|
               result["position_t#{topic_id}"] = nil
             end
 
             # Populate actual position values where they exist
-            measure.measure_indicators.each do |mi|
-              if public_topics.include?(mi.indicator_id)
-                position_value = map_supportlevel_to_position(mi.supportlevel_id)
-                result["position_t#{mi.indicator_id}"] = position_value
+            statement.measure_indicators.each do |measure_indicator|
+              if topics.include?(measure_indicator.indicator_id)
+                position_value = map_supportlevel_to_position(measure_indicator.supportlevel_id)
+                result["position_t#{measure_indicator.indicator_id}"] = position_value
               end
             end
 
