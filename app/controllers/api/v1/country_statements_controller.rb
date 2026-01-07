@@ -19,6 +19,7 @@ module Api
           etag: last_updated,
           last_modified: last_updated
         )
+        return if performed?
 
         cache_key = "public/v1/country_statements/#{last_updated.to_i}"
         json = Rails.cache.fetch(cache_key, expires_in: 1.hour) do

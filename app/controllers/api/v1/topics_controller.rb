@@ -13,6 +13,7 @@ module Api
           etag: topics.maximum(:updated_at),
           last_modified: topics.maximum(:updated_at)
         )
+        return if performed?
 
         # Rails cache layer (stays fast even with 0 minute browser cache)
         cache_key = "public/v1/topics/#{topics.maximum(:updated_at).to_i}/#{topics.count}"

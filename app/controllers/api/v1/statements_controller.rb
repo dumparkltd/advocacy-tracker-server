@@ -14,6 +14,7 @@ module Api
           etag: statements.maximum(:updated_at),
           last_modified: statements.maximum(:updated_at)
         )
+        return if performed?
 
         cache_key = "public/v1/statements/#{statements.maximum(:updated_at).to_i}/#{statements.count}"
         json = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
