@@ -5,6 +5,7 @@ class IndicatorSerializer
     :code,
     :title,
     :description,
+    :description_api,
     :reference,
     :draft,
     :manager_id,

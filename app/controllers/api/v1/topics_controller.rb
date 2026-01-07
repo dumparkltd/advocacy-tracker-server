@@ -22,7 +22,7 @@ module Api
               gpat_id: topic.id,
               code: topic.code,
               title: topic.title,
-              description: topic.description,
+              description: topic.description_api,
               teaser: topic.teaser_api,
               annotation: topic.annotation_api,
               short_title: topic.short_api,

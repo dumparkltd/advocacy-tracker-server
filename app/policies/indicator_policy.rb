@@ -6,6 +6,7 @@ class IndicatorPolicy < ApplicationPolicy
       :code,
       :title,
       :description,
+      :description_api,
       :draft,
       :reference,
       :private,

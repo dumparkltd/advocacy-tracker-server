@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_06_182709) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_07_170422) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -179,6 +179,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_06_182709) do
     t.datetime "created_at", precision: nil, null: false
     t.integer "created_by_id"
     t.text "description"
+    t.text "description_api"
     t.boolean "draft", default: false
     t.date "end_date"
     t.integer "frequency_months"
