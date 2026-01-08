@@ -15,7 +15,7 @@ module Api
         topic_max = topics.maximum(:updated_at)
         measure_topic_max = statements.joins(:measure_indicators).maximum('measure_indicators.updated_at')
 
-        last_updated = [statement_max, relationship_max, topic_max, measure_indicator_max].compact.max
+        last_updated = [statement_max, relationship_max, topic_max, measure_topic_max].compact.max
 
         expires_in 0, public: true
 
