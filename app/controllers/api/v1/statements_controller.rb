@@ -18,12 +18,6 @@ module Api
 
         last_updated = [statement_max, relationship_max, topic_max, statement_topic_max].compact.max
 
-        Rails.logger.info "DEBUG - statement_max: #{statement_max}"
-        Rails.logger.info "DEBUG - relationship_max: #{relationship_max}"
-        Rails.logger.info "DEBUG - topic_max: #{topic_max}"
-        Rails.logger.info "DEBUG - measure_indicator_max: #{statement_topic_max}"
-        Rails.logger.info "DEBUG - last_updated: #{last_updated}"
-
         expires_in 0, public: true
 
         fresh_when(
@@ -34,7 +28,7 @@ module Api
 
         topic_ids = topics.pluck(:id)
 
-        cache_key = "public/v1/statements/#{statements.maximum(:updated_at).to_i}/#{statements.count}"
+        cache_key = "public/v1/statements/#{last_updated.to_i}"
         json = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
           statements.order(:code).map do |statement|
             result = {
