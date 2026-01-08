@@ -7,11 +7,11 @@ module Api
           .public_statements
           .includes(measure_indicators: :indicator)
 
-        topics = Indicator.public_topics.pluck(:id)
+        topics = Indicator.public_topics
 
         # Combine all relevant timestamps for cache invalidation
         statement_max = statements.maximum(:updated_at)
-        relationship_max = statements.maximum(:relationship_updated_at)
+        relationship_max = statements.maximum(:relationship_updated_at) || Time.at(0)
         topic_max = topics.maximum(:updated_at)
         measure_topic_max = statements.joins(:measure_indicators).maximum('measure_indicators.updated_at')
 
@@ -24,6 +24,8 @@ module Api
           last_modified: last_updated
         )
         return if performed?
+
+        topic_ids = topics.pluck(:id)
 
         cache_key = "public/v1/statements/#{statements.maximum(:updated_at).to_i}/#{statements.count}"
         json = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
@@ -40,13 +42,13 @@ module Api
             }
 
             # Initialize ALL public topic positions as null
-            topics.each do |topic_id|
+            topic_ids.each do |topic_id|
               result["position_t#{topic_id}"] = nil
             end
 
             # Populate actual position values where they exist
             statement.measure_indicators.each do |measure_indicator|
-              if topics.include?(measure_indicator.indicator_id)
+              if topic_ids.include?(measure_indicator.indicator_id)
                 position_value = map_supportlevel_to_position(measure_indicator.supportlevel_id)
                 result["position_t#{measure_indicator.indicator_id}"] = position_value
               end
