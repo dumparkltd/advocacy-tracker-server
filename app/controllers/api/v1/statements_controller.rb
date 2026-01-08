@@ -9,10 +9,19 @@ module Api
 
         topics = Indicator.public_topics.pluck(:id)
 
+        # Combine all relevant timestamps for cache invalidation
+        statement_max = statements.maximum(:updated_at)
+        relationship_max = statements.maximum(:relationship_updated_at)
+        topic_max = topics.maximum(:updated_at)
+        measure_topic_max = statements.joins(:measure_indicators).maximum('measure_indicators.updated_at')
+
+        last_updated = [statement_max, relationship_max, topic_max, measure_indicator_max].compact.max
+
         expires_in 0, public: true
+
         fresh_when(
-          etag: statements.maximum(:updated_at),
-          last_modified: statements.maximum(:updated_at)
+          etag: last_updated,
+          last_modified: last_updated
         )
         return if performed?
 
