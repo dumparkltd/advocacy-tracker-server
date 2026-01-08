@@ -10,11 +10,10 @@ module Api
         topics = Indicator.public_topics
 
         # Combine all relevant timestamps for cache invalidation
-        statement_max = statements.maximum(:updated_at)
+        statement_max = Measure.where(measuretype_id: Measure::STATEMENT_TYPE_ID).maximum(:updated_at)
         relationship_max = statements.maximum(:relationship_updated_at) || Time.at(0)
-        topic_max = topics.maximum(:updated_at)
+        topic_max = Indicator.maximum(:updated_at)
         statement_topic_max = statements.joins(:measure_indicators).maximum('measure_indicators.updated_at')
-
 
         last_updated = [statement_max, relationship_max, topic_max, statement_topic_max].compact.max
 
@@ -28,7 +27,7 @@ module Api
 
         topic_ids = topics.pluck(:id)
 
-        cache_key = "public/v1/statements/#{last_updated.to_i}"
+        cache_key = "public/v1/statements/#{last_updated.to_i}/#{statements.count}/#{topics.count}"
         json = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
           statements.order(:code).map do |statement|
             result = {

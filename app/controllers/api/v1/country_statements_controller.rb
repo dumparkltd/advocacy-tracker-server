@@ -7,12 +7,23 @@ module Api
         statements = Measure.public_statements
 
         # Get all relevant timestamps for cache invalidation
-        country_max = countries.maximum(:updated_at)
-        statement_max = statements.maximum(:updated_at)
+        country_max = Actor.where(actortype_id: Actor::COUNTRY_TYPE_ID).maximum(:updated_at)
+        group_max = Actor.where(actortype_id: Actor::GROUP_TYPE_ID).maximum(:updated_at)
+        statement_max = Measure.where(measuretype_id: Measure::STATEMENT_TYPE_ID).maximum(:updated_at)
         actor_measure_max = ActorMeasure.maximum(:updated_at)
         membership_max = Membership.maximum(:updated_at)
+        country_relationship_max = countries.maximum(:relationship_updated_at) || Time.at(0)
+        group_relationship_max = Actor.where(actortype_id: Actor::GROUP_TYPE_ID).maximum(:relationship_updated_at) || Time.at(0)
 
-        last_updated = [country_max, statement_max, actor_measure_max, membership_max].compact.max
+        last_updated = [
+          country_max,
+          group_max,
+          statement_max,
+          actor_measure_max,
+          membership_max,
+          country_relationship_max,
+          group_relationship_max
+        ].compact.max
 
         expires_in 0, public: true
         fresh_when(
@@ -21,7 +32,7 @@ module Api
         )
         return if performed?
 
-        cache_key = "public/v1/country_statements/#{last_updated.to_i}"
+        cache_key = "public/v1/country_statements/#{last_updated.to_i}/#{statements.count}/#{countries.count}"
         json = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
           results = []
 

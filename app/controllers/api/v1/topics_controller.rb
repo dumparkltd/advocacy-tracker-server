@@ -6,17 +6,18 @@ module Api
       def index
         topics = Indicator.public_topics
 
+        last_updated = Indicator.maximum(:updated_at)
         # Always validate during development (0 minutes cache)
         expires_in 0, public: true
 
         fresh_when(
-          etag: topics.maximum(:updated_at),
-          last_modified: topics.maximum(:updated_at)
+          etag: last_updated,
+          last_modified: last_updated
         )
         return if performed?
 
         # Rails cache layer (stays fast even with 0 minute browser cache)
-        cache_key = "public/v1/topics/#{topics.maximum(:updated_at).to_i}/#{topics.count}"
+        cache_key = "public/v1/topics/#{last_updated.to_i}/#{topics.count}"
         json = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
           topics.order(:code).map do |topic|
             {
