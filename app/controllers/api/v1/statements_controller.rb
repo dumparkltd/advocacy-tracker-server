@@ -13,9 +13,14 @@ module Api
         statement_max = statements.maximum(:updated_at)
         relationship_max = statements.maximum(:relationship_updated_at) || Time.at(0)
         topic_max = topics.maximum(:updated_at)
-        measure_topic_max = statements.joins(:measure_indicators).maximum('measure_indicators.updated_at')
+        statement_topic_max = statements.joins(:measure_indicators).maximum('measure_indicators.updated_at')
 
-        last_updated = [statement_max, relationship_max, topic_max, measure_topic_max].compact.max
+
+        last_updated = [statement_max, relationship_max, topic_max, statement_topic_max].compact.max
+
+        Rails.logger.info "DEBUG - statement_max: #{statement_max}"
+        Rails.logger.info "DEBUG - topic_max: #{topic_max}"
+        Rails.logger.info "DEBUG - last_updated: #{last_updated}"
 
         expires_in 0, public: true
 
