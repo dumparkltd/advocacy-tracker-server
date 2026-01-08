@@ -19,7 +19,9 @@ module Api
         last_updated = [statement_max, relationship_max, topic_max, statement_topic_max].compact.max
 
         Rails.logger.info "DEBUG - statement_max: #{statement_max}"
+        Rails.logger.info "DEBUG - relationship_max: #{relationship_max}"
         Rails.logger.info "DEBUG - topic_max: #{topic_max}"
+        Rails.logger.info "DEBUG - measure_indicator_max: #{statement_topic_max}"
         Rails.logger.info "DEBUG - last_updated: #{last_updated}"
 
         expires_in 0, public: true
