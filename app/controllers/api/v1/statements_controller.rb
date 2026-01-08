@@ -11,7 +11,7 @@ module Api
 
         # Combine all relevant timestamps for cache invalidation
         statement_max = statements.maximum(:updated_at)
-        relationship_max = statements.maximum(:relationship_updated_at)
+        relationship_max = statements.maximum(:relationship_updated_at) || Time.at(0)
         topic_max = topics.maximum(:updated_at)
         measure_topic_max = statements.joins(:measure_indicators).maximum('measure_indicators.updated_at')
 
