@@ -277,14 +277,8 @@ RSpec.describe MeasuresController, type: :controller do
           }
         end
 
-        it "can't be set by manager" do
+        it "can be set by manager" do
           sign_in manager
-          expect(subject).to be_created
-          expect(JSON.parse(subject.body).dig("data", "attributes", "is_official")).to eq false
-        end
-
-        it "can be set by admin" do
-          sign_in admin
           expect(subject).to be_created
           expect(JSON.parse(subject.body).dig("data", "attributes", "is_official")).to eq true
         end
@@ -567,13 +561,8 @@ RSpec.describe MeasuresController, type: :controller do
             put :update, format: :json, params: {id: measure, measure: {is_official: true}}
           end
 
-          it "can't be set by manager" do
+          it "can be set by manager" do
             sign_in manager
-            expect(JSON.parse(subject.body).dig("data", "attributes", "is_official")).to eq false
-          end
-
-          it "can be set by admin" do
-            sign_in admin
             expect(JSON.parse(subject.body).dig("data", "attributes", "is_official")).to eq true
           end
 

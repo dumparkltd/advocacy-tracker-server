@@ -27,9 +27,9 @@ class MeasurePolicy < ApplicationPolicy
       :updated_by_id,
       :quote_api,
       :source_api,
+      (statement? ? :is_official : nil),
       # only for admins
       (@user.role?("admin") ? :is_archive : nil),
-      (@user.role?("admin") && statement? ? :is_official : nil),
       (@user.role?("admin") && statement? ? :public_api : nil)
     ].compact
   end
