@@ -25,8 +25,6 @@ module Api
         )
         return if performed?
 
-        topic_ids = topics.pluck(:id)
-
         cache_key = "public/v1/statements/#{last_updated.to_i}/#{statements.count}/#{topics.count}"
         json = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
           statements.order(:code).map do |statement|
@@ -42,16 +40,18 @@ module Api
             }
 
             # Initialize ALL public topic positions as null
-            topic_ids.each do |topic_id|
-              result["position_t#{topic_id}"] = nil
+            topics.each do |topic|
+              result["position_t#{topic.code_api.presence || topic.id}"] = nil
             end
 
             # Populate actual position values where they exist
             statement.measure_indicators.each do |measure_indicator|
-              if topic_ids.include?(measure_indicator.indicator_id)
-                position_value = map_supportlevel_to_position(measure_indicator.supportlevel_id)
-                result["position_t#{measure_indicator.indicator_id}"] = position_value
-              end
+              topic = topics.find { |t| t.id == measure_indicator.indicator_id }
+              next unless topic
+
+              topic_key = topic.code_api.presence || topic.id
+              position_value = map_supportlevel_to_position(measure_indicator.supportlevel_id)
+              result["position_t#{topic_key}"] = position_value
             end
 
             result

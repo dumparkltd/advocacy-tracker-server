@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_07_170422) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_09_164659) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -176,6 +176,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_07_170422) do
   create_table "indicators", id: :serial, force: :cascade do |t|
     t.text "annotation_api"
     t.string "code"
+    t.string "code_api"
     t.datetime "created_at", precision: nil, null: false
     t.integer "created_by_id"
     t.text "description"
@@ -283,6 +284,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_07_170422) do
     t.boolean "has_reference_landbased_ml"
     t.text "indicator_summary"
     t.boolean "is_archive", default: false
+    t.boolean "is_official", default: false
     t.bigint "measuretype_id"
     t.boolean "notifications", default: true
     t.text "outcome"

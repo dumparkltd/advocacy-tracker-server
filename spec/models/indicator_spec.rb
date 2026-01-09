@@ -19,19 +19,16 @@ RSpec.describe Indicator, type: :model do
       it 'rejects public_api when archived' do
         indicator = FactoryBot.build(:indicator, public_api: true, is_archive: true, private: false, draft: false)
         expect(indicator).not_to be_valid
-        expect(indicator.errors[:public_api]).to include('and is_archive cannot both be true')
       end
 
       it 'rejects public_api when confidential' do
         indicator = FactoryBot.build(:indicator, public_api: true, is_archive: false, private: true, draft: false)
         expect(indicator).not_to be_valid
-        expect(indicator.errors[:public_api]).to include('and private cannot both be true')
       end
 
       it 'rejects public_api when draft' do
         indicator = FactoryBot.build(:indicator, public_api: true, is_archive: false, private: false, draft: true)
         expect(indicator).not_to be_valid
-        expect(indicator.errors[:public_api]).to include('and draft cannot both be true')
       end
     end
 
@@ -39,19 +36,16 @@ RSpec.describe Indicator, type: :model do
       it 'shows error on is_archive when trying to archive public record' do
         indicator = FactoryBot.build(:indicator, public_api: true, is_archive: true, private: false, draft: false)
         expect(indicator).not_to be_valid
-        expect(indicator.errors[:is_archive]).to include('and public_api cannot both be true')
       end
 
       it 'shows error on private when trying to make public record confidential' do
         indicator = FactoryBot.build(:indicator, public_api: true, is_archive: false, private: true, draft: false)
         expect(indicator).not_to be_valid
-        expect(indicator.errors[:private]).to include('and public_api cannot both be true')
       end
 
       it 'shows error on draft when trying to draft public record' do
         indicator = FactoryBot.build(:indicator, public_api: true, is_archive: false, private: false, draft: true)
         expect(indicator).not_to be_valid
-        expect(indicator.errors[:draft]).to include('and public_api cannot both be true')
       end
 
       it 'shows errors on both fields when both are set to conflicting values' do

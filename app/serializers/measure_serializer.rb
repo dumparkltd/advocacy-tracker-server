@@ -28,6 +28,7 @@ class MeasureSerializer
     :title,
     :url,
     :is_archive,
+    :is_official,
     :public_api,
     :source_api,
     :quote_api,

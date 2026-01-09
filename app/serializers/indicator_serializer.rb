@@ -3,6 +3,7 @@ class IndicatorSerializer
 
   attributes(
     :code,
+    :code_api,
     :title,
     :description,
     :description_api,

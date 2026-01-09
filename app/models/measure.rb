@@ -43,6 +43,7 @@ class Measure < VersionedRecord
     where(
       public_api: true,
       measuretype_id: STATEMENT_TYPE_ID,
+      is_official: true,
       is_archive: false,
       private: false,
       draft: false
@@ -59,6 +60,7 @@ class Measure < VersionedRecord
   validate :public_api_only_for_statements
   validate :public_api_requires_clean_state
   validate :is_archive_requires_unpublished
+  validate :is_not_official_requires_unpublished
   validate :private_requires_unpublished
   validate :draft_requires_unpublished
 
@@ -101,7 +103,7 @@ class Measure < VersionedRecord
   end
 
   def publicly_accessible?
-    public_api? && statement? && !is_archive? && !private? && !draft?
+    public_api? && is_official? && statement? && !is_archive? && !private? && !draft?
   end
 
   def statement?
@@ -160,12 +162,19 @@ class Measure < VersionedRecord
       errors.add(:public_api, 'Cannot be published to GPN when record is archived') if is_archive?
       errors.add(:public_api, 'Cannot be published to GPN when record is confidential') if private?
       errors.add(:public_api, 'Cannot be published to GPN when record is in draft') if draft?
+      errors.add(:public_api, 'Cannot be published to GPN when record is not official') if !is_official?
     end
   end
 
   def is_archive_requires_unpublished
     if is_archive? && public_api?
       errors.add(:is_archive, 'Record cannot be archived when published to GPN')
+    end
+  end
+
+  def is_not_official_requires_unpublished
+    if !is_official? && public_api?
+      errors.add(:is_official, 'Record cannot be made not official when published to GPN')
     end
   end
 

@@ -262,6 +262,34 @@ RSpec.describe MeasuresController, type: :controller do
         end
       end
 
+      context "is_official" do
+        let(:statement_measuretype) { FactoryBot.create(:measuretype, id: Measure::STATEMENT_TYPE_ID, title: "Statement") }
+
+        let(:params) do
+          {
+            measure: {
+              title: "test",
+              description: "test",
+              measuretype_id: statement_measuretype.id,
+              target_date: "today",
+              is_official: true
+            }
+          }
+        end
+
+        it "can't be set by manager" do
+          sign_in manager
+          expect(subject).to be_created
+          expect(JSON.parse(subject.body).dig("data", "attributes", "is_official")).to eq false
+        end
+
+        it "can be set by admin" do
+          sign_in admin
+          expect(subject).to be_created
+          expect(JSON.parse(subject.body).dig("data", "attributes", "is_official")).to eq true
+        end
+      end
+
       context "public_api" do
         let(:statement_measuretype) { FactoryBot.create(:measuretype, id: Measure::STATEMENT_TYPE_ID, title: "Statement") }
         let(:params) do
@@ -274,6 +302,7 @@ RSpec.describe MeasuresController, type: :controller do
               public_api: true,
               draft: false,
               is_archive: false,
+              is_official: true,
               private: false
             }
           }
@@ -307,11 +336,10 @@ RSpec.describe MeasuresController, type: :controller do
             }
           end
 
-          it "will be rejected by validation" do
+          it "will be filtered by policy" do
             sign_in admin
-            expect(subject).to have_http_status(422)
-            json = JSON.parse(subject.body)
-            expect(json["public_api"]).to be_present
+            expect(subject).to be_created
+            expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq false
           end
         end
       end
@@ -531,9 +559,39 @@ RSpec.describe MeasuresController, type: :controller do
           end
         end
 
+        context "is_official" do
+          let(:statement_measuretype) { FactoryBot.create(:measuretype, id: Measure::STATEMENT_TYPE_ID, title: "Statement") }
+          let(:measure) { FactoryBot.create(:measure, measuretype: statement_measuretype, draft: false, is_archive: false, private: false, is_official: false) }
+
+          subject do
+            put :update, format: :json, params: {id: measure, measure: {is_official: true}}
+          end
+
+          it "can't be set by manager" do
+            sign_in manager
+            expect(JSON.parse(subject.body).dig("data", "attributes", "is_official")).to eq false
+          end
+
+          it "can be set by admin" do
+            sign_in admin
+            expect(JSON.parse(subject.body).dig("data", "attributes", "is_official")).to eq true
+          end
+
+          context "for non-statements" do
+            let(:non_statement_measuretype) { FactoryBot.create(:measuretype, :not_a_statement) }
+            let(:measure) { FactoryBot.create(:measure, measuretype: non_statement_measuretype, notifications: true) }
+
+            it "can't be set even by admin" do
+              sign_in admin
+              expect(JSON.parse(subject.body).dig("data", "attributes", "is_official")).to eq false
+            end
+          end
+
+        end
+
         context "public_api" do
           let(:statement_measuretype) { FactoryBot.create(:measuretype, id: Measure::STATEMENT_TYPE_ID, title: "Statement") }
-          let(:measure) { FactoryBot.create(:measure, measuretype: statement_measuretype, draft: false, is_archive: false, private: false) }
+          let(:measure) { FactoryBot.create(:measure, measuretype: statement_measuretype, draft: false, is_archive: false, private: false, is_official: true) }
 
           subject do
             put :update, format: :json, params: {
@@ -542,6 +600,7 @@ RSpec.describe MeasuresController, type: :controller do
                 public_api: true,
                 draft: false,
                 is_archive: false,
+                is_official: true,
                 private: false
               }
             }
@@ -561,11 +620,10 @@ RSpec.describe MeasuresController, type: :controller do
             let(:non_statement_measuretype) { FactoryBot.create(:measuretype, :not_a_statement) }
             let(:measure) { FactoryBot.create(:measure, measuretype: non_statement_measuretype, draft: false, is_archive: false, private: false) }
 
-            it "will be rejected by validation" do
+            it "will be filtered by policy" do
               sign_in admin
-              expect(subject).to have_http_status(422)
-              json = JSON.parse(subject.body)
-              expect(json.dig("error", "public_api")).to be_present
+              expect(subject).to be_ok
+              expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq false
             end
           end
         end

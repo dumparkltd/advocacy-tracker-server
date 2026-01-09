@@ -23,6 +23,7 @@ module Api
             {
               gpat_id: topic.id,
               code: topic.code,
+              code_api: topic.code_api,
               title: topic.title,
               description: topic.description_api,
               teaser: topic.teaser_api,

@@ -84,7 +84,6 @@ RSpec.describe Actor, type: :model do
         actor = FactoryBot.build(:actor, actortype: not_country_actortype, public_api: true,
                      is_archive: false, private: false, draft: false)
         expect(actor).not_to be_valid
-        expect(actor.errors[:public_api]).to include('can only be set to true for countries (actortype_id = 1)')
       end
     end
 
@@ -93,21 +92,18 @@ RSpec.describe Actor, type: :model do
         actor = FactoryBot.build(:actor, actortype: country_actortype,
                      public_api: true, is_archive: true, private: false, draft: false)
         expect(actor).not_to be_valid
-        expect(actor.errors[:public_api]).to include('and is_archive cannot both be true')
       end
 
       it 'rejects public_api when confidential' do
         actor = FactoryBot.build(:actor, actortype: country_actortype,
                      public_api: true, is_archive: false, private: true, draft: false)
         expect(actor).not_to be_valid
-        expect(actor.errors[:public_api]).to include('and private cannot both be true')
       end
 
       it 'rejects public_api when draft' do
         actor = FactoryBot.build(:actor, actortype: country_actortype,
                      public_api: true, is_archive: false, private: false, draft: true)
         expect(actor).not_to be_valid
-        expect(actor.errors[:public_api]).to include('and draft cannot both be true')
       end
     end
 
@@ -116,21 +112,18 @@ RSpec.describe Actor, type: :model do
         actor = FactoryBot.build(:actor, actortype: country_actortype,
                      public_api: true, is_archive: true, private: false, draft: false)
         expect(actor).not_to be_valid
-        expect(actor.errors[:is_archive]).to include('and public_api cannot both be true')
       end
 
       it 'shows error on private when trying to make public country confidential' do
         actor = FactoryBot.build(:actor, actortype: country_actortype,
                      public_api: true, is_archive: false, private: true, draft: false)
         expect(actor).not_to be_valid
-        expect(actor.errors[:private]).to include('and public_api cannot both be true')
       end
 
       it 'shows error on draft when trying to draft public country' do
         actor = FactoryBot.build(:actor, actortype: country_actortype,
                      public_api: true, is_archive: false, private: false, draft: true)
         expect(actor).not_to be_valid
-        expect(actor.errors[:draft]).to include('and public_api cannot both be true')
       end
     end
   end

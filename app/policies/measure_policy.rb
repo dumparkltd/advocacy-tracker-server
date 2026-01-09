@@ -29,7 +29,14 @@ class MeasurePolicy < ApplicationPolicy
       :source_api,
       # only for admins
       (@user.role?("admin") ? :is_archive : nil),
-      (@user.role?("admin") ? :public_api : nil)
+      (@user.role?("admin") && statement? ? :is_official : nil),
+      (@user.role?("admin") && statement? ? :public_api : nil)
     ].compact
+  end
+
+  private
+
+  def statement?
+    @record.statement? || (@record.new_record? && @record.measuretype_id == Measure::STATEMENT_TYPE_ID)
   end
 end

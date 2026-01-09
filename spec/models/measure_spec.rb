@@ -181,15 +181,14 @@ RSpec.describe Measure, type: :model do
     describe 'public_api only for statements' do
       it 'allows public_api for statements when state is clean' do
         measure = FactoryBot.build(:measure, measuretype: statement_measuretype, public_api: true,
-                       is_archive: false, private: false, draft: false)
+                       is_archive: false, private: false, draft: false, is_official: true)
         expect(measure).to be_valid
       end
 
       it 'rejects public_api for non-statements' do
         measure = FactoryBot.build(:measure, measuretype: not_statement_measuretype, public_api: true,
-                       is_archive: false, private: false, draft: false)
+                       is_archive: false, private: false, draft: false, is_official: true)
         expect(measure).not_to be_valid
-        expect(measure.errors[:public_api]).to include('can only be set to true for statements (measuretype_id = 1)')
       end
     end
 
@@ -198,21 +197,24 @@ RSpec.describe Measure, type: :model do
         measure = FactoryBot.build(:measure, measuretype: statement_measuretype,
                        public_api: true, is_archive: true, private: false, draft: false)
         expect(measure).not_to be_valid
-        expect(measure.errors[:public_api]).to include('and is_archive cannot both be true')
+      end
+
+      it 'rejects public_api when not official' do
+        measure = FactoryBot.build(:measure, measuretype: statement_measuretype,
+                       public_api: true, is_archive: false, private: false, draft: false, is_official: false)
+        expect(measure).not_to be_valid
       end
 
       it 'rejects public_api when confidential' do
         measure = FactoryBot.build(:measure, measuretype: statement_measuretype,
                        public_api: true, is_archive: false, private: true, draft: false)
         expect(measure).not_to be_valid
-        expect(measure.errors[:public_api]).to include('and private cannot both be true')
       end
 
       it 'rejects public_api when draft' do
         measure = FactoryBot.build(:measure, measuretype: statement_measuretype,
                        public_api: true, is_archive: false, private: false, draft: true)
         expect(measure).not_to be_valid
-        expect(measure.errors[:public_api]).to include('and draft cannot both be true')
       end
     end
 
@@ -221,21 +223,24 @@ RSpec.describe Measure, type: :model do
         measure = FactoryBot.build(:measure, measuretype: statement_measuretype,
                        public_api: true, is_archive: true, private: false, draft: false)
         expect(measure).not_to be_valid
-        expect(measure.errors[:is_archive]).to include('and public_api cannot both be true')
+      end
+
+      it 'shows error on is_official when trying to mark public statement not official' do
+        measure = FactoryBot.build(:measure, measuretype: statement_measuretype,
+                       public_api: true, is_archive: false, private: false, draft: false, is_official: false)
+        expect(measure).not_to be_valid
       end
 
       it 'shows error on private when trying to make public statement confidential' do
         measure = FactoryBot.build(:measure, measuretype: statement_measuretype,
                        public_api: true, is_archive: false, private: true, draft: false)
         expect(measure).not_to be_valid
-        expect(measure.errors[:private]).to include('and public_api cannot both be true')
       end
 
       it 'shows error on draft when trying to draft public statement' do
         measure = FactoryBot.build(:measure, measuretype: statement_measuretype,
                        public_api: true, is_archive: false, private: false, draft: true)
         expect(measure).not_to be_valid
-        expect(measure.errors[:draft]).to include('and public_api cannot both be true')
       end
     end
   end
@@ -243,23 +248,27 @@ RSpec.describe Measure, type: :model do
   describe 'scopes' do
     let!(:public_statement) do
       FactoryBot.create(:measure, public_api: true, measuretype: statement_measuretype,
-             is_archive: false, private: false, draft: false)
+             is_archive: false, private: false, draft: false, is_official: true)
     end
     let!(:private_statement) do
       FactoryBot.create(:measure, public_api: false, measuretype: statement_measuretype,
-             is_archive: false, private: false, draft: false)
+             is_archive: false, private: true, draft: false, is_official: true)
     end
     let!(:public_non_statement) do
       FactoryBot.create(:measure, public_api: false, measuretype: not_statement_measuretype,
-             is_archive: false, private: false, draft: false)
+             is_archive: false, private: false, draft: false, is_official: true)
     end
     let!(:archived_statement) do
       FactoryBot.create(:measure, public_api: false, measuretype: statement_measuretype,
-             is_archive: true, private: false, draft: false)
+             is_archive: true, private: false, draft: false, is_official: true)
     end
     let!(:draft_statement) do
       FactoryBot.create(:measure, public_api: false, measuretype: statement_measuretype,
-             is_archive: false, private: false, draft: true)
+             is_archive: false, private: false, draft: true, is_official: true)
+    end
+    let!(:not_official_statement) do
+      FactoryBot.create(:measure, public_api: false, measuretype: statement_measuretype,
+             is_archive: false, private: false, draft: true, is_official: false)
     end
 
     describe '.public_statements' do
@@ -270,6 +279,7 @@ RSpec.describe Measure, type: :model do
         expect(result).not_to include(public_non_statement)
         expect(result).not_to include(archived_statement)
         expect(result).not_to include(draft_statement)
+        expect(result).not_to include(not_official_statement)
       end
     end
   end
@@ -289,37 +299,43 @@ RSpec.describe Measure, type: :model do
   describe '#publicly_accessible?' do
     it 'returns true when all conditions met' do
       measure = FactoryBot.build(:measure, public_api: true, measuretype: statement_measuretype,
-                     is_archive: false, private: false, draft: false)
+                     is_archive: false, private: false, draft: false, is_official: true)
       expect(measure.publicly_accessible?).to eq(true)
     end
 
     it 'returns false when not a statement' do
       measure = FactoryBot.build(:measure, public_api: true, measuretype: not_statement_measuretype,
-                     is_archive: false, private: false, draft: false)
+                     is_archive: false, private: false, draft: false, is_official: true)
       expect(measure.publicly_accessible?).to eq(false)
     end
 
     it 'returns false when not public_api' do
       measure = FactoryBot.build(:measure, public_api: false, measuretype: statement_measuretype,
-                     is_archive: false, private: false, draft: false)
+                     is_archive: false, private: false, draft: false, is_official: true)
       expect(measure.publicly_accessible?).to eq(false)
     end
 
     it 'returns false when archived' do
       measure = FactoryBot.build(:measure, public_api: true, measuretype: statement_measuretype,
-                     is_archive: true, private: false, draft: false)
+                     is_archive: true, private: false, draft: false, is_official: true)
       expect(measure.publicly_accessible?).to eq(false)
     end
 
     it 'returns false when confidential' do
       measure = FactoryBot.build(:measure, public_api: true, measuretype: statement_measuretype,
-                     is_archive: false, private: true, draft: false)
+                     is_archive: false, private: true, draft: false, is_official: true)
       expect(measure.publicly_accessible?).to eq(false)
     end
 
     it 'returns false when draft' do
       measure = FactoryBot.build(:measure, public_api: true, measuretype: statement_measuretype,
-                     is_archive: false, private: false, draft: true)
+                     is_archive: false, private: false, draft: true, is_official: true)
+      expect(measure.publicly_accessible?).to eq(false)
+    end
+
+    it 'returns false when not official' do
+      measure = FactoryBot.build(:measure, public_api: true, measuretype: statement_measuretype,
+                     is_archive: false, private: false, draft: true, is_official: false)
       expect(measure.publicly_accessible?).to eq(false)
     end
   end

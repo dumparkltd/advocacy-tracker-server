@@ -14,6 +14,7 @@ class IndicatorPolicy < ApplicationPolicy
       :teaser_api,
       :annotation_api,
       :short_api,
+      :code_api,
       (@user.role?("admin") ? :is_archive : nil),
       (@user.role?("admin") ? :public_api : nil)
     ].compact

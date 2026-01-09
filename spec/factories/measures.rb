@@ -9,6 +9,7 @@ FactoryBot.define do
     private { false }
     draft { true }
     public_api { false }
+    is_official { false }
 
     trait :draft do
       draft { true }
@@ -32,6 +33,14 @@ FactoryBot.define do
 
     trait :not_is_archive do
       is_archive { false }
+    end
+
+    trait :is_official do
+      is_official { true }
+    end
+
+    trait :not_is_official do
+      is_official { false }
     end
 
     trait :not_private do
