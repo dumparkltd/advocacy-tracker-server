@@ -35,7 +35,6 @@ module Api
         cache_key = "public/v1/country_statements/#{last_updated.to_i}/#{statements.count}/#{countries.count}"
         json = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
           results = []
-          direct_pairs = Set.new  # Track direct country-statement pairs
 
           # 1. Direct country-statement relationships
           direct_relationships = ActorMeasure
@@ -52,7 +51,6 @@ module Api
             )
 
           direct_relationships.each do |rel|
-            direct_pairs.add([rel.country_id, rel.statement_id])  # Track this pair
             results << {
               country_id: rel.country_id,
               country_code: rel.country_code,
@@ -76,6 +74,11 @@ module Api
             })
             .where(countries: { id: countries.pluck(:id) })
             .where(measures: { id: statements.pluck(:id) })
+            .where("NOT EXISTS (
+              SELECT 1 FROM actor_measures direct
+              WHERE direct.actor_id = countries.id
+              AND direct.measure_id = measures.id
+            )")
             .select(
               'countries.id as country_id',
               'countries.code as country_code',
@@ -87,9 +90,6 @@ module Api
             )
 
           group_relationships.each do |rel|
-            # Skip if this country-statement pair already exists as direct relationship
-            next if direct_pairs.include?([rel.country_id, rel.statement_id])
-
             results << {
               country_id: rel.country_id,
               country_code: rel.country_code,
