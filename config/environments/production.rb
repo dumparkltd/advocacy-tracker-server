@@ -56,17 +56,28 @@ Rails.application.configure do
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
-
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # Production MailGun SMTP config
+  if ENV.fetch("EMAIL_ENABLED", "false") == "false"
+    config.action_mailer.perform_deliveries = false
+    config.action_mailer.raise_delivery_errors = false
+  else
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      port: ENV["MAILGUN_SMTP_PORT"],
+      address: ENV["MAILGUN_SMTP_SERVER"],
+      user_name: ENV["MAILGUN_SMTP_LOGIN"],
+      password: ENV["MAILGUN_SMTP_PASSWORD"],
+      domain: "wwf.no",
+      authentication: :plain,
+      enable_starttls_auto: true
+    }
+    config.action_mailer.raise_delivery_errors = true
+    config.action_mailer.default_url_options = {
+      host: ENV["ACTION_MAILER_HOST"] || "wwf.no",
+      protocol: ENV["ACTION_MAILER_PROTOCOL"] || "https"
+    }
+    config.action_mailer.asset_host = ENV["ACTION_MAILER_ASSET_HOST"] || "https://wwf.no"
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
