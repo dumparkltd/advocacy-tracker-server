@@ -1,11 +1,4 @@
 class Overrides::PasswordsController < DeviseTokenAuth::PasswordsController
-  def edit
-    Rails.logger.info "=== PASSWORD RESET DEBUG ==="
-    Rails.logger.info "Params: #{params.inspect}"
-    Rails.logger.info "Redirect options: #{redirect_options.inspect}"
-    super
-  end
-
   def redirect_options
     trusted_host = URI.parse(ENV["CLIENT_URL"].to_s.strip).host
     redirect_host = URI.parse(params[:redirect_url]).host rescue nil
