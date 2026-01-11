@@ -35,6 +35,7 @@ module Api
         cache_key = "public/v1/country_statements/#{last_updated.to_i}/#{statements.count}/#{countries.count}"
         json = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
           results = []
+          direct_pairs = Set.new  # Track direct country-statement pairs
 
           # 1. Direct country-statement relationships
           direct_relationships = ActorMeasure
@@ -51,6 +52,7 @@ module Api
             )
 
           direct_relationships.each do |rel|
+            direct_pairs.add([rel.country_id, rel.statement_id])  # Track this pair
             results << {
               country_id: rel.country_id,
               country_code: rel.country_code,
