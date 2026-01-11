@@ -3,6 +3,7 @@
 class Measure < VersionedRecord
   # Type constants matching seed data
   STATEMENT_TYPE_ID = 1
+  EVENT_TYPE_ID = 1
 
   has_many :recommendation_measures, inverse_of: :measure, dependent: :destroy
   has_many :measure_categories, inverse_of: :measure, dependent: :destroy
@@ -17,6 +18,7 @@ class Measure < VersionedRecord
   has_many :measure_measures, dependent: :destroy
   has_many :measures, through: :measure_measures
   has_many :other_measure_measures, class_name: "MeasureMeasure", dependent: :destroy, foreign_key: :other_measure_id
+  has_many :parent_measures, through: :other_measure_measures, source: :other_measure
 
   has_many :measure_resources, dependent: :destroy
   has_many :resources, through: :measure_resources
@@ -108,6 +110,10 @@ class Measure < VersionedRecord
 
   def statement?
     measuretype_id == STATEMENT_TYPE_ID
+  end
+
+  def event?
+    measuretype_id == EVENT_TYPE_ID
   end
 
   private

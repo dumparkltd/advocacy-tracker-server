@@ -14,8 +14,17 @@ module Api
         relationship_max = statements.maximum(:relationship_updated_at) || Time.at(0)
         topic_max = Indicator.maximum(:updated_at)
         statement_topic_max = statements.joins(:measure_indicators).maximum('measure_indicators.updated_at')
+        event_max = Measure.where(measuretype_id: Measure::EVENT_TYPE_ID).maximum(:updated_at)
+        measure_measure_max = MeasureMeasure.maximum(:updated_at)
 
-        last_updated = [statement_max, relationship_max, topic_max, statement_topic_max].compact.max
+        last_updated = [
+          statement_max,
+          relationship_max,
+          topic_max,
+          statement_topic_max,
+          event_max,
+          measure_measure_max
+        ].compact.max
 
         expires_in 0, public: true
 
@@ -28,6 +37,8 @@ module Api
         cache_key = "public/v1/statements/#{last_updated.to_i}/#{statements.count}/#{topics.count}"
         json = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
           statements.order(:code).map do |statement|
+            parent_event = statement.parent_measures.find { |m| m.event? }
+
             result = {
               gpat_id: statement.id,
               code: statement.code,
@@ -36,6 +47,7 @@ module Api
               url: statement.url,
               quote: statement.quote_api,
               source: statement.source_api,
+              event_id: parent_event&.id,
               updated_at: statement.updated_at
             }
 
