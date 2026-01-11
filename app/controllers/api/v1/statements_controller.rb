@@ -7,7 +7,7 @@ module Api
           .public_statements
           .includes(
             measure_indicators: :indicator,
-            parent_measure_measures: :parent_measure
+            parent_measure_measures: :other_measure
           )
 
         topics = Indicator.public_topics
