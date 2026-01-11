@@ -3,7 +3,7 @@
 class Measure < VersionedRecord
   # Type constants matching seed data
   STATEMENT_TYPE_ID = 1
-  EVENT_TYPE_ID = 1
+  EVENT_TYPE_ID = 2
 
   has_many :recommendation_measures, inverse_of: :measure, dependent: :destroy
   has_many :measure_categories, inverse_of: :measure, dependent: :destroy
