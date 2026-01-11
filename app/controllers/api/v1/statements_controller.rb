@@ -5,7 +5,10 @@ module Api
       def index
         statements = Measure
           .public_statements
-          .includes(measure_indicators: :indicator)
+          .includes(
+            measure_indicators: :indicator,
+            parent_measure_measures: :parent_measure
+          )
 
         topics = Indicator.public_topics
 

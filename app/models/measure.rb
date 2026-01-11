@@ -18,7 +18,8 @@ class Measure < VersionedRecord
   has_many :measure_measures, dependent: :destroy
   has_many :measures, through: :measure_measures
   has_many :other_measure_measures, class_name: "MeasureMeasure", dependent: :destroy, foreign_key: :other_measure_id
-  has_many :parent_measures, through: :other_measure_measures, source: :other_measure
+  has_many :parent_measure_measures, class_name: "MeasureMeasure", foreign_key: :measure_id
+  has_many :parent_measures, through: :parent_measure_measures, source: :other_measure
 
   has_many :measure_resources, dependent: :destroy
   has_many :resources, through: :measure_resources
