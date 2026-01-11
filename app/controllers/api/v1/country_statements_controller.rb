@@ -85,6 +85,9 @@ module Api
             )
 
           group_relationships.each do |rel|
+            # Skip if this country-statement pair already exists as direct relationship
+            next if direct_pairs.include?([rel.country_id, rel.statement_id])
+
             results << {
               country_id: rel.country_id,
               country_code: rel.country_code,
