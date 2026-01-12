@@ -231,6 +231,11 @@ RSpec.describe IndicatorsController, type: :controller do
           expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq false
         end
 
+        it "can be set by coordinator" do
+          sign_in coordinator
+          expect(subject).to be_created
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
+        end
         it "can be set by admin" do
           sign_in admin
           expect(subject).to be_created
@@ -311,6 +316,11 @@ RSpec.describe IndicatorsController, type: :controller do
         it "can't be set by manager" do
           sign_in manager
           expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq false
+        end
+
+        it "can be set by coordinator" do
+          sign_in coordinator
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
         end
 
         it "can be set by admin" do

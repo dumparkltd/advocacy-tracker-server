@@ -23,7 +23,8 @@ class ActorPolicy < ApplicationPolicy
       :updated_by_id,
       # only for admins
       (@user.role?("admin") ? :is_archive : nil),
-      (@user.role?("admin") ? :public_api : nil)
+      # only for admins or coordinators
+      (@user.role?("admin") || @user.role?("coordinator")  ? :public_api : nil)
     ].compact
   end
 end

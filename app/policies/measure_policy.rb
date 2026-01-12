@@ -30,7 +30,8 @@ class MeasurePolicy < ApplicationPolicy
       (statement? ? :is_official : nil),
       # only for admins
       (@user.role?("admin") ? :is_archive : nil),
-      (@user.role?("admin") && statement? ? :public_api : nil)
+      # only for admins or coordinators
+      ((@user.role?("admin") || @user.role?("coordinator")) && statement? ? :public_api : nil)
     ].compact
   end
 
