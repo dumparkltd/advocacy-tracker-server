@@ -6,7 +6,7 @@ class IndicatorSerializer
     :code_api,
     :title,
     :description,
-    :description_api,
+    # :description_api,
     :reference,
     :draft,
     :manager_id,
@@ -17,9 +17,9 @@ class IndicatorSerializer
     :private,
     :is_archive,
     :public_api,
-    :teaser_api,
-    :annotation_api,
-    :short_api,
+    # :teaser_api,
+    # :annotation_api,
+    # :short_api,
     :relationship_updated_at,
     :relationship_updated_by_id
   )

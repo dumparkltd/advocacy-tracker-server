@@ -35,10 +35,10 @@ Rails.application.routes.draw do
   # public routes - separate from client API
   namespace :api do
     namespace :v1 do
-      get 'public/topics', to: 'topics#index'
       get 'public/statements', to: 'statements#index'
-      get 'public/countries', to: 'countries#index'
       get 'public/country-statements', to: 'country_statements#index'
+      # get 'public/topics', to: 'topics#index'
+      # get 'public/countries', to: 'countries#index'
     end
   end
 
