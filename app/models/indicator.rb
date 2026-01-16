@@ -15,12 +15,14 @@ class Indicator < VersionedRecord
   has_many :measures, through: :measure_indicators, inverse_of: :indicators
   has_many :categories, through: :measures
   has_many :recommendations, through: :measures
+  has_many :children, class_name: 'Indicator', foreign_key: 'parent_id', dependent: :nullify
 
   # not sure we need this?
   # has_many :direct_recommendations, through: :indicators_recommendations, source: :recommendation
 
   belongs_to :manager, class_name: "User", foreign_key: :manager_id, required: false
   belongs_to :relationship_updated_by, class_name: "User", required: false
+  belongs_to :parent, class_name: 'Indicator', optional: true
 
   scope :public_topics, -> {
     where(
@@ -31,11 +33,18 @@ class Indicator < VersionedRecord
     )
   }
 
+  # Scopes
+  scope :root_indicators, -> { where(parent_id: nil) }
+  scope :child_indicators, -> { where.not(parent_id: nil) }
+  scope :parent_indicators, -> { where(id: select(:parent_id).distinct) }
+
   # Validations
   validate :public_api_requires_clean_state
   validate :is_archive_requires_unpublished
   validate :private_requires_unpublished
   validate :draft_requires_unpublished
+  validate :different_parent
+  validate :no_grandparent
 
   # Method to check if record is public
   def publicly_accessible?
@@ -75,6 +84,22 @@ class Indicator < VersionedRecord
       errors.add(:end_date, "must be after start_date")
     end
   end
+
+  def different_parent
+    if parent_id.present? && parent_id == id
+      errors.add(:parent_id, "cannot reference itself")
+    end
+  end
+
+  def no_grandparent
+    if parent_id.present?
+      parent_indicator = Indicator.find_by(id: parent_id)
+      if parent_indicator&.parent_id.present?
+        errors.add(:parent_id, "cannot have a grandparent (maximum 2 levels allowed)")
+      end
+    end
+  end
+
 
   def build_due_dates
     if repeat

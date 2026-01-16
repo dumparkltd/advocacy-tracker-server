@@ -11,6 +11,7 @@ class IndicatorPolicy < ApplicationPolicy
       :reference,
       :private,
       :updated_by_id,
+      :parent_id,
       # :teaser_api,
       # :annotation_api,
       # :short_api,

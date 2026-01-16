@@ -4,6 +4,9 @@ RSpec.describe Indicator, type: :model do
   it { is_expected.to validate_presence_of :title }
   it { is_expected.to have_many :measures }
   it { is_expected.to have_many :categories }
+  it { is_expected.to belong_to(:parent).class_name('Indicator').optional }
+  it { is_expected.to have_many(:children).class_name('Indicator').with_foreign_key('parent_id').dependent(:nullify) }
+
 
   it "is expected to default private to false" do
     expect(subject.private).to eq(false)
@@ -83,4 +86,74 @@ RSpec.describe Indicator, type: :model do
     end
   end
 
+  context "Parent-child relation validations" do
+    it "Can't be its own parent" do
+      indicator = FactoryBot.create(:indicator)
+      indicator.update(parent_id: indicator.id)
+      expect(indicator).to be_invalid
+      expect(indicator.errors[:parent_id]).to include("cannot reference itself")
+    end
+
+    it "Should not update parent_id if parent is already a child-indicator" do
+      parent_indicator = FactoryBot.create(:indicator, :parent_indicator)
+      child_indicator = FactoryBot.create(:indicator, :child_indicator, parent: parent_indicator)
+      grandchild_indicator = FactoryBot.build(:indicator, :child_indicator, parent: child_indicator)
+
+      expect(grandchild_indicator).to be_invalid
+      expect(grandchild_indicator.errors[:parent_id]).to include("cannot have a grandparent (maximum 2 levels allowed)")
+    end
+  end
+
+  describe 'scopes' do
+    let!(:root1) { FactoryBot.create(:indicator, parent: nil) }
+    let!(:root2) { FactoryBot.create(:indicator, parent: nil) }
+    let!(:child1) { FactoryBot.create(:indicator, parent: root1) }
+    let!(:child2) { FactoryBot.create(:indicator, parent: root1) }
+    let!(:child3) { FactoryBot.create(:indicator, parent: root2) }
+
+    describe '.root_indicators' do
+      it 'returns only indicators without parents' do
+        expect(Indicator.root_indicators).to contain_exactly(root1, root2)
+      end
+    end
+
+    describe '.child_indicators' do
+      it 'returns only indicators with parents' do
+        expect(Indicator.child_indicators).to contain_exactly(child1, child2, child3)
+      end
+    end
+
+    describe '.parent_indicators' do
+      it 'returns only indicators that have children' do
+        expect(Indicator.parent_indicators).to contain_exactly(root1, root2)
+      end
+
+      it 'excludes indicators without children' do
+        childless = FactoryBot.create(:indicator, parent: nil)
+        expect(Indicator.parent_indicators).not_to include(childless)
+      end
+    end
+  end
+
+  describe 'dependent behavior' do
+    let(:parent_indicator) { FactoryBot.create(:indicator) }
+    let!(:child1) { FactoryBot.create(:indicator, parent: parent_indicator) }
+    let!(:child2) { FactoryBot.create(:indicator, parent: parent_indicator) }
+
+    it 'nullifies children when parent is destroyed' do
+      parent_indicator.destroy
+      expect(child1.reload.parent_id).to be_nil
+      expect(child2.reload.parent_id).to be_nil
+    end
+
+    it 'does not destroy children when parent is destroyed' do
+      child1_id = child1.id
+      child2_id = child2.id
+
+      parent_indicator.destroy
+
+      expect(Indicator.exists?(child1_id)).to be true
+      expect(Indicator.exists?(child2_id)).to be true
+    end
+  end
 end

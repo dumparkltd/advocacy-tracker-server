@@ -13,7 +13,7 @@ FactoryBot.define do
     trait :without_measure do
       measures { [] }
     end
-    
+
     trait :draft do
       draft { true }
     end
@@ -44,6 +44,16 @@ FactoryBot.define do
 
     trait :not_public do
       public_api { false }
+    end
+
+    trait :parent_indicator do
+      title { "parent indicator" }
+      # parent_id will be nil by default
+    end
+
+    trait :child_indicator do
+      title { "child indicator" }
+      association :parent, factory: :indicator
     end
   end
 end

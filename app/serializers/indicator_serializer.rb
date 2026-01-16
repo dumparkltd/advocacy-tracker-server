@@ -10,6 +10,7 @@ class IndicatorSerializer
     :reference,
     :draft,
     :manager_id,
+    :parent_id,
     :frequency_months,
     :start_date,
     :repeat,

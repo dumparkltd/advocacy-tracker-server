@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_09_164659) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_16_182458) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -186,6 +186,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_09_164659) do
     t.integer "frequency_months"
     t.boolean "is_archive", default: false
     t.integer "manager_id"
+    t.bigint "parent_id"
     t.boolean "private", default: false
     t.boolean "public_api", default: false, null: false
     t.string "reference"
@@ -201,6 +202,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_09_164659) do
     t.index ["created_at"], name: "index_indicators_on_created_at"
     t.index ["draft"], name: "index_indicators_on_draft"
     t.index ["manager_id"], name: "index_indicators_on_manager_id"
+    t.index ["parent_id"], name: "index_indicators_on_parent_id"
     t.index ["public_api"], name: "index_indicators_on_public_api"
   end
 
@@ -583,6 +585,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_09_164659) do
   add_foreign_key "framework_frameworks", "frameworks", column: "other_framework_id"
   add_foreign_key "framework_taxonomies", "frameworks"
   add_foreign_key "framework_taxonomies", "taxonomies"
+  add_foreign_key "indicators", "indicators", column: "parent_id"
   add_foreign_key "indicators", "users", column: "relationship_updated_by_id"
   add_foreign_key "measure_actors", "actors"
   add_foreign_key "measure_actors", "measures"
