@@ -670,6 +670,73 @@ RSpec.describe MeasuresController, type: :controller do
           put :update, format: :json, params: {id: measure, measure: {title: ""}}
           expect(response).to have_http_status(422)
         end
+
+        context "with published statements" do
+          let(:statement_measuretype) { FactoryBot.create(:measuretype, id: Measure::STATEMENT_TYPE_ID, title: "Statement") }
+          let(:published_statement) do
+            FactoryBot.create(:measure,
+              measuretype: statement_measuretype,
+              public_api: true,
+              is_official: true,
+              is_archive: false,
+              private: false,
+              draft: false)
+          end
+
+          subject do
+            put :update,
+              format: :json,
+              params: {id: published_statement, measure: {title: "updated title"}}
+          end
+
+          context "as manager" do
+            it "will not allow updating a published statement" do
+              sign_in manager
+              expect(subject).to be_forbidden
+            end
+          end
+
+          context "as coordinator" do
+            it "will allow updating a published statement" do
+              sign_in coordinator
+              expect(subject).to be_ok
+              expect(JSON.parse(subject.body).dig("data", "attributes", "title")).to eq "updated title"
+            end
+          end
+
+          context "as admin" do
+            it "will allow updating a published statement" do
+              sign_in admin
+              expect(subject).to be_ok
+              expect(JSON.parse(subject.body).dig("data", "attributes", "title")).to eq "updated title"
+            end
+          end
+
+          context "unpublished statement" do
+            let(:unpublished_statement) do
+              FactoryBot.create(:measure,
+                measuretype: statement_measuretype,
+                public_api: false,
+                is_official: true,
+                is_archive: false,
+                private: false,
+                draft: false)
+            end
+
+            subject do
+              put :update,
+                format: :json,
+                params: {id: unpublished_statement, measure: {title: "updated title"}}
+            end
+
+            it "will allow manager to update" do
+              sign_in manager
+              expect(subject).to be_ok
+              expect(JSON.parse(subject.body).dig("data", "attributes", "title")).to eq "updated title"
+            end
+          end
+        end
+
       end
     end
   end

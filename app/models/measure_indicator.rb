@@ -14,8 +14,14 @@ class MeasureIndicator < ApplicationRecord
       .where(indicators: { public_api: true, is_archive: false, private: false, draft: false })
   }
 
-  def publicly_accessible?
-    measure&.publicly_accessible? && indicator&.publicly_accessible?
+  def can_be_changed_by?(user)
+    # returns false if measure doesn't exist or doesn't allow change
+    measure&.can_change_relationships_by?(user)
+  end
+
+  def can_be_changed_by?(user)
+    # returns false if measure doesn't exist or doesn't allow change
+    measure&.can_change_relationships_by?(user)
   end
 
   private

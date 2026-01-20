@@ -10,6 +10,11 @@ class MeasureCategory < VersionedRecord
 
   after_commit :set_relationship_updated, on: [:create, :update, :destroy]
 
+  def can_be_changed_by?(user)
+    # returns false if measure doesn't exist or doesn't allow change
+    measure&.can_change_relationships_by?(user)
+  end
+
   private
 
   def category_taxonomy_enabled_for_measuretype

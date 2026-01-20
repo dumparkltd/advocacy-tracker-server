@@ -15,6 +15,11 @@ class ActorMeasure < VersionedRecord
     actor&.publicly_accessible? && measure&.publicly_accessible?
   end
 
+  def can_be_changed_by?(user)
+    # returns false if measure doesn't exist or doesn't allow change
+    measure&.can_change_relationships_by?(user)
+  end
+
   private
 
   def actor_actortype_is_active

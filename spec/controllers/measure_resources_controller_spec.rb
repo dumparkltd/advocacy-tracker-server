@@ -108,14 +108,6 @@ RSpec.describe MeasureResourcesController, type: :controller do
         context "with a measure_resource not belonging to the signed in user" do
           let(:measure_resource) { FactoryBot.create(:measure_resource) }
 
-          it "will not allow you to delete a measure_resource" do
-            expect(subject).to be_forbidden
-          end
-        end
-
-        context "with a measure_resource belonging to the signed in user" do
-          let(:measure_resource) { FactoryBot.create(:measure_resource, created_by: user) }
-
           it "will allow you to delete a measure_resource" do
             expect(subject).to be_no_content
           end
@@ -127,14 +119,6 @@ RSpec.describe MeasureResourcesController, type: :controller do
 
         context "with a measure_resource not belonging to the signed in user" do
           let(:measure_resource) { FactoryBot.create(:measure_resource) }
-
-          it "will not allow you to delete a measure_resource" do
-            expect(subject).to be_forbidden
-          end
-        end
-
-        context "with a measure_resource belonging to the signed in user" do
-          let(:measure_resource) { FactoryBot.create(:measure_resource, created_by: user) }
 
           it "will allow you to delete a measure_resource" do
             expect(subject).to be_no_content

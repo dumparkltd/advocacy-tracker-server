@@ -10,8 +10,20 @@ class MeasureMeasurePolicy < ApplicationPolicy
     ]
   end
 
+  def create?
+    super && @record.can_be_changed_by?(@user)
+  end
+
   def update?
     false
+  end
+
+  def destroy?
+    # Override ApplicationPolicy - managers/coordinators can delete relationships
+    # (unless the statement is blocked)
+    return false unless @user.role?("admin") || @user.role?("manager") || @user.role?("coordinator")
+
+    @record.can_be_changed_by?(@user)
   end
 
   class Scope < Scope

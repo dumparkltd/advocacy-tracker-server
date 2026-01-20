@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class MeasurePolicy < ApplicationPolicy
+  def update?
+    super && @record.can_be_updated_by?(@user)
+  end
+
   def permitted_attributes
     [
       :amount_comment,

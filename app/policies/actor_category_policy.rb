@@ -9,7 +9,8 @@ class ActorCategoryPolicy < ApplicationPolicy
     ]
   end
 
-  def update?
-    false
+  def destroy?
+    # Override ApplicationPolicy - managers/coordinators can delete relationships
+    @user.role?("admin") || @user.role?("manager") || @user.role?("coordinator")
   end
 end

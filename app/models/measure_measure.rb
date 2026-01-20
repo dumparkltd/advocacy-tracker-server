@@ -10,6 +10,15 @@ class MeasureMeasure < VersionedRecord
 
   after_commit :set_relationship_updated, on: [:create, :update, :destroy]
 
+  def can_be_changed_by?(user)
+    # Returns false if either measure is nil/doesn't exist
+    # or if either measure doesn't allow the change
+    return false if measure.nil? || other_measure.nil?
+
+    measure.can_change_relationships_by?(user) &&
+      other_measure.can_change_relationships_by?(user)
+  end
+
   private
 
   def measure_not_other_measure

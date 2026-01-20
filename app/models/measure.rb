@@ -117,6 +117,21 @@ class Measure < VersionedRecord
     measuretype_id == EVENT_TYPE_ID
   end
 
+  def published_and_locked?
+    # A statement is locked if it's published to the public API
+    public_api? && statement?
+  end
+
+  def can_be_updated_by?(user)
+    return true unless published_and_locked?
+
+    user.role?("admin") || user.role?("coordinator")
+  end
+
+  def can_change_relationships_by?(user)
+    can_be_updated_by?(user)
+  end
+
   private
 
   def delete_existing_task_notifications!(user_id:)

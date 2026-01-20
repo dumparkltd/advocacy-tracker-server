@@ -1,4 +1,6 @@
 class MeasureCategoriesController < ApplicationController
+  skip_before_action :authorize!, only: [:create]
+  
   # GET /measure_categories
   def index
     @measure_categories = policy_scope(base_object).order(created_at: :desc).page(params[:page])
