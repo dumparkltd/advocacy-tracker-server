@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_16_182458) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -64,6 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
     t.decimal "population"
     t.string "prefix"
     t.boolean "private", default: false
+    t.boolean "public_api", default: false, null: false
     t.datetime "relationship_updated_at"
     t.bigint "relationship_updated_by_id"
     t.string "title", null: false
@@ -74,6 +75,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
     t.index ["created_by_id"], name: "index_actors_on_created_by_id"
     t.index ["manager_id"], name: "index_actors_on_manager_id"
     t.index ["parent_id"], name: "index_actors_on_parent_id"
+    t.index ["public_api"], name: "index_actors_on_public_api"
     t.index ["updated_by_id"], name: "index_actors_on_updated_by_id"
   end
 
@@ -172,27 +174,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
   end
 
   create_table "indicators", id: :serial, force: :cascade do |t|
+    t.text "annotation_api"
     t.string "code"
+    t.string "code_api"
     t.datetime "created_at", precision: nil, null: false
     t.integer "created_by_id"
     t.text "description"
+    t.text "description_api"
     t.boolean "draft", default: false
     t.date "end_date"
     t.integer "frequency_months"
     t.boolean "is_archive", default: false
     t.integer "manager_id"
+    t.bigint "parent_id"
     t.boolean "private", default: false
+    t.boolean "public_api", default: false, null: false
     t.string "reference"
     t.datetime "relationship_updated_at"
     t.bigint "relationship_updated_by_id"
     t.boolean "repeat", default: false
+    t.text "short_api"
     t.date "start_date"
+    t.text "teaser_api"
     t.text "title", null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "updated_by_id"
     t.index ["created_at"], name: "index_indicators_on_created_at"
     t.index ["draft"], name: "index_indicators_on_draft"
     t.index ["manager_id"], name: "index_indicators_on_manager_id"
+    t.index ["parent_id"], name: "index_indicators_on_parent_id"
+    t.index ["public_api"], name: "index_indicators_on_public_api"
   end
 
   create_table "measure_actors", force: :cascade do |t|
@@ -275,15 +286,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
     t.boolean "has_reference_landbased_ml"
     t.text "indicator_summary"
     t.boolean "is_archive", default: false
+    t.boolean "is_official", default: false
     t.bigint "measuretype_id"
     t.boolean "notifications", default: true
     t.text "outcome"
     t.bigint "parent_id"
     t.boolean "private", default: false
+    t.boolean "public_api", default: false, null: false
+    t.text "quote_api"
     t.string "reference_landbased_ml"
     t.string "reference_ml"
     t.datetime "relationship_updated_at"
     t.bigint "relationship_updated_by_id"
+    t.text "source_api"
     t.string "status_comment"
     t.string "status_lbs_protocol"
     t.string "target_comment"
@@ -296,6 +311,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
     t.index ["draft"], name: "index_measures_on_draft"
     t.index ["measuretype_id"], name: "index_measures_on_measuretype_id"
     t.index ["parent_id"], name: "index_measures_on_parent_id"
+    t.index ["public_api"], name: "index_measures_on_public_api"
   end
 
   create_table "measuretype_taxonomies", force: :cascade do |t|
@@ -569,6 +585,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_135122) do
   add_foreign_key "framework_frameworks", "frameworks", column: "other_framework_id"
   add_foreign_key "framework_taxonomies", "frameworks"
   add_foreign_key "framework_taxonomies", "taxonomies"
+  add_foreign_key "indicators", "indicators", column: "parent_id"
   add_foreign_key "indicators", "users", column: "relationship_updated_by_id"
   add_foreign_key "measure_actors", "actors"
   add_foreign_key "measure_actors", "measures"

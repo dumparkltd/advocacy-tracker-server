@@ -24,7 +24,13 @@ class UserPolicy < ApplicationPolicy
   end
 
   def permitted_attributes
-    [:email, :password, :password_confirmation, :name]
+    [
+      :email,
+      :password,
+      :password_confirmation,
+      :name,
+      :updated_by_id
+    ]
   end
 
   class Scope < Scope

@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class Measure < VersionedRecord
+  # Type constants matching seed data
+  STATEMENT_TYPE_ID = 1
+  EVENT_TYPE_ID = 2
+
   has_many :recommendation_measures, inverse_of: :measure, dependent: :destroy
   has_many :measure_categories, inverse_of: :measure, dependent: :destroy
   has_many :measure_indicators, inverse_of: :measure, dependent: :destroy
@@ -14,6 +18,8 @@ class Measure < VersionedRecord
   has_many :measure_measures, dependent: :destroy
   has_many :measures, through: :measure_measures
   has_many :other_measure_measures, class_name: "MeasureMeasure", dependent: :destroy, foreign_key: :other_measure_id
+  has_many :parent_measure_measures, class_name: "MeasureMeasure", foreign_key: :measure_id
+  has_many :parent_measures, through: :parent_measure_measures, source: :other_measure
 
   has_many :measure_resources, dependent: :destroy
   has_many :resources, through: :measure_resources
@@ -32,8 +38,20 @@ class Measure < VersionedRecord
 
   belongs_to :relationship_updated_by, class_name: "User", required: false
 
-  accepts_nested_attributes_for :recommendation_measures
-  accepts_nested_attributes_for :measure_categories
+  # Make type immutable after creation
+  attr_readonly :measuretype_id
+
+  # Scope - only public statements
+  scope :public_statements, -> {
+    where(
+      public_api: true,
+      measuretype_id: STATEMENT_TYPE_ID,
+      is_official: true,
+      is_archive: false,
+      private: false,
+      draft: false
+    )
+  }
 
   validates :title, presence: true
   validates :measuretype_id, presence: true
@@ -42,6 +60,12 @@ class Measure < VersionedRecord
     :not_own_descendant,
     :parent_id_allowed_by_measuretype
   )
+  validate :public_api_only_for_statements
+  validate :public_api_requires_clean_state
+  validate :is_archive_requires_unpublished
+  validate :is_not_official_requires_unpublished
+  validate :private_requires_unpublished
+  validate :draft_requires_unpublished
 
   def self.notifiable_attribute_names
     Measure.attribute_names - %w[updated_at]
@@ -79,6 +103,33 @@ class Measure < VersionedRecord
 
   def task?
     measuretype&.notifications?
+  end
+
+  def publicly_accessible?
+    public_api? && is_official? && statement? && !is_archive? && !private? && !draft?
+  end
+
+  def statement?
+    measuretype_id == STATEMENT_TYPE_ID
+  end
+
+  def event?
+    measuretype_id == EVENT_TYPE_ID
+  end
+
+  def published_and_locked?
+    # A statement is locked if it's published to the public API
+    public_api? && statement?
+  end
+
+  def can_be_updated_by?(user)
+    return true unless published_and_locked?
+
+    user.role?("admin") || user.role?("coordinator")
+  end
+
+  def can_change_relationships_by?(user)
+    can_be_updated_by?(user)
   end
 
   private
@@ -120,5 +171,44 @@ class Measure < VersionedRecord
 
   def relationship_updated?
     saved_change_to_attribute?(:relationship_updated_at)
+  end
+
+  def public_api_only_for_statements
+    if public_api? && !statement?
+      errors.add(:public_api, 'Only statements can be published to GPN (measuretype_id = 1)')
+    end
+  end
+
+  def public_api_requires_clean_state
+    if public_api?
+      errors.add(:public_api, 'Cannot be published to GPN when record is archived') if is_archive?
+      errors.add(:public_api, 'Cannot be published to GPN when record is confidential') if private?
+      errors.add(:public_api, 'Cannot be published to GPN when record is in draft') if draft?
+      errors.add(:public_api, 'Cannot be published to GPN when record is not official') if !is_official?
+    end
+  end
+
+  def is_archive_requires_unpublished
+    if is_archive? && public_api?
+      errors.add(:is_archive, 'Record cannot be archived when published to GPN')
+    end
+  end
+
+  def is_not_official_requires_unpublished
+    if !is_official? && public_api?
+      errors.add(:is_official, 'Record cannot be made not official when published to GPN')
+    end
+  end
+
+  def private_requires_unpublished
+    if private? && public_api?
+      errors.add(:private, 'Record cannot be marked confidential when published to GPN')
+    end
+  end
+
+  def draft_requires_unpublished
+    if draft? && public_api?
+      errors.add(:draft, 'Record cannot be marked as draft when published to GPN')
+    end
   end
 end

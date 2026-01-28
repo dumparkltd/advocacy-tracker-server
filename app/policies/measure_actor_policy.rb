@@ -12,4 +12,16 @@ class MeasureActorPolicy < ApplicationPolicy
       :value
     ]
   end
+
+  def create?
+    super && @record.can_be_changed_by?(@user)
+  end
+
+  def update?
+    super && @record.can_be_changed_by?(@user)
+  end
+
+  def destroy?
+    @user.role?("admin") || @user.role?("manager") || @user.role?("coordinator")
+  end
 end

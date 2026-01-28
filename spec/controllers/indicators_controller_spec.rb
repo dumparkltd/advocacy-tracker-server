@@ -47,8 +47,8 @@ RSpec.describe IndicatorsController, type: :controller do
       end
 
       context "is_archive indicators" do
-        let!(:indicator) { FactoryBot.create(:indicator, :not_is_archive) }
-        let!(:is_archive_indicator) { FactoryBot.create(:indicator, :is_archive) }
+        let!(:indicator) { FactoryBot.create(:indicator, :not_is_archive, :not_draft) }
+        let!(:is_archive_indicator) { FactoryBot.create(:indicator, :is_archive, :not_draft) }
 
         it "admin will see" do
           sign_in admin
@@ -210,6 +210,39 @@ RSpec.describe IndicatorsController, type: :controller do
         end
       end
 
+      context "public_api" do
+        let(:params) do
+          {
+            indicator: {
+              title: "test",
+              description: "test",
+              target_date: "today",
+              public_api: true,
+              draft: false,
+              is_archive: false,
+              private: false
+            }
+          }
+        end
+
+        it "can't be set by manager" do
+          sign_in manager
+          expect(subject).to be_created
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq false
+        end
+
+        it "can be set by coordinator" do
+          sign_in coordinator
+          expect(subject).to be_created
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
+        end
+        it "can be set by admin" do
+          sign_in admin
+          expect(subject).to be_created
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
+        end
+      end
+
       it "will record what manager created the indicator", versioning: true do
         expect(PaperTrail).to be_enabled
         sign_in manager
@@ -264,6 +297,35 @@ RSpec.describe IndicatorsController, type: :controller do
         it "can be set by admin" do
           sign_in admin
           expect(JSON.parse(subject.body).dig("data", "attributes", "is_archive")).to eq true
+        end
+      end
+
+      context "public_api" do
+        subject do
+          put :update, format: :json, params: {
+            id: indicator,
+            indicator: {
+              public_api: true,
+              draft: false,
+              is_archive: false,
+              private: false
+            }
+          }
+        end
+
+        it "can't be set by manager" do
+          sign_in manager
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq false
+        end
+
+        it "can be set by coordinator" do
+          sign_in coordinator
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
+        end
+
+        it "can be set by admin" do
+          sign_in admin
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
         end
       end
 

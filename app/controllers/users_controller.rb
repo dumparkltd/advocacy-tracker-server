@@ -32,8 +32,15 @@ class UsersController < ApplicationController
 
   # PATCH/PUT /users/1
   def update
-    render json: serialize(@user) if @user.update!(permitted_attributes(@user))
+    if params[:user][:updated_at] && DateTime.parse(params[:user][:updated_at]).to_i != @user.updated_at.to_i
+      return render json: '{"error":"Record outdated"}', status: :unprocessable_entity
+    end
+    if @user.update!(permitted_attributes(@user))
+
+      render json: serialize(@user)
+    end
   end
+
 
   # DELETE /users/1
   def destroy

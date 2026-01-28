@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class MeasurePolicy < ApplicationPolicy
+  def update?
+    super && @record.can_be_updated_by?(@user)
+  end
+
   def permitted_attributes
     [
       :amount_comment,
@@ -12,45 +16,32 @@ class MeasurePolicy < ApplicationPolicy
       :date_start,
       :description,
       :draft,
-      :has_reference_landbased_ml,
-      :indicator_summary,
-      :measuretype_id,
+      # measuretype_id only on create
+      (@record.new_record? ? :measuretype_id : nil),
       :notifications,
       :outcome,
       :parent_id,
       :private,
-      :reference_landbased_ml,
-      :reference_ml,
       :status_comment,
-      :status_lbs_protocol,
       :target_comment,
       :target_date_comment,
       :target_date,
       :title,
       :url,
-      (:is_archive if @user.role?("admin")),
-      measure_categories_attributes: [
-        :category_id,
-        category_attributes: [
-          :description,
-          :draft,
-          :id,
-          :manager_id,
-          :short_title,
-          :taxonomy_id,
-          :title,
-          :url
-        ]
-      ],
-      recommendation_measures_attributes: [
-        :recommendation_id,
-        recommendation_attributes: [
-          :draft,
-          :id,
-          :number,
-          :title
-        ]
-      ]
+      :updated_by_id,
+      :quote_api,
+      :source_api,
+      (statement? ? :is_official : nil),
+      # only for admins
+      (@user.role?("admin") ? :is_archive : nil),
+      # only for admins or coordinators
+      ((@user.role?("admin") || @user.role?("coordinator")) && statement? ? :public_api : nil)
     ].compact
+  end
+
+  private
+
+  def statement?
+    @record.statement? || (@record.new_record? && @record.measuretype_id == Measure::STATEMENT_TYPE_ID)
   end
 end

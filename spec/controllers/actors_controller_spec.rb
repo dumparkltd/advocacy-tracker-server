@@ -33,19 +33,19 @@ RSpec.describe ActorsController, type: :controller do
           expect(json["data"].length).to eq(2)
         end
 
-        it "manager will see draft actors" do
-          sign_in manager
-          json = JSON.parse(subject.body)
-          expect(json["data"].length).to eq(2)
-        end
-
         it "coordinator will see draft actors" do
           sign_in coordinator
           json = JSON.parse(subject.body)
           expect(json["data"].length).to eq(2)
         end
 
-        it "analyst will not see draft actors" do
+        it "team member will see draft actors" do
+          sign_in manager
+          json = JSON.parse(subject.body)
+          expect(json["data"].length).to eq(2)
+        end
+
+        it "visitor will not see draft actors" do
           sign_in analyst
 
           json = JSON.parse(subject.body)
@@ -63,13 +63,13 @@ RSpec.describe ActorsController, type: :controller do
           expect(json["data"].length).to eq(2)
         end
 
-        it "manager will not see" do
+        it "team member will not see" do
           sign_in manager
           json = JSON.parse(subject.body)
           expect(json["data"].length).to eq(1)
         end
 
-        it "analyst will not see" do
+        it "visitor will not see" do
           sign_in analyst
 
           json = JSON.parse(subject.body)
@@ -88,13 +88,13 @@ RSpec.describe ActorsController, type: :controller do
           expect(json["data"].length).to eq(3)
         end
 
-        it "manager who created will see" do
+        it "team member who created will see" do
           sign_in manager
           json = JSON.parse(subject.body)
           expect(json["data"].length).to eq(2)
         end
 
-        it "manager who didn't create will not see" do
+        it "team member who didn't create will not see" do
           sign_in FactoryBot.create(:user, :manager)
           json = JSON.parse(subject.body)
           expect(json["data"].length).to eq(1)
@@ -123,7 +123,7 @@ RSpec.describe ActorsController, type: :controller do
         it { expect(subject).to be_ok }
       end
 
-      context "as manager" do
+      context "as team member" do
         before { sign_in manager }
 
         it { expect(subject).to be_ok }
@@ -152,7 +152,6 @@ RSpec.describe ActorsController, type: :controller do
     end
 
     context "when signed in" do
-      let(:recommendation) { FactoryBot.create(:recommendation) }
       let(:category) { FactoryBot.create(:category) }
       let(:actortype) { FactoryBot.create(:actortype) }
       let(:params) do
@@ -178,7 +177,7 @@ RSpec.describe ActorsController, type: :controller do
         expect(subject).to be_forbidden
       end
 
-      it "will allow a manager to create an actor" do
+      it "will allow a team member to create an actor" do
         sign_in manager
         expect(subject).to be_created
       end
@@ -202,7 +201,7 @@ RSpec.describe ActorsController, type: :controller do
           }
         end
 
-        it "can't be set by manager" do
+        it "can't be set by team member" do
           sign_in manager
           expect(subject).to be_created
           expect(JSON.parse(subject.body).dig("data", "attributes", "is_archive")).to eq false
@@ -215,7 +214,69 @@ RSpec.describe ActorsController, type: :controller do
         end
       end
 
-      it "will record what manager created the actor", versioning: true do
+      context "public_api" do
+        let(:country_actortype) { FactoryBot.create(:actortype, id: Actor::COUNTRY_TYPE_ID, title: "Country") }
+        let(:params) do
+          {
+            actor: {
+              code: "test",
+              title: "test",
+              description: "test",
+              actortype_id: country_actortype.id,
+              target_date: "today",
+              public_api: true,
+              draft: false,
+              is_archive: false,
+              private: false
+            }
+          }
+        end
+
+        it "can't be set by team member" do
+          sign_in manager
+          expect(subject).to be_created
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq false
+        end
+
+        it "can be set by coordinator for countries" do
+          sign_in coordinator
+          expect(subject).to be_created
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
+        end
+
+        it "can be set by admin for countries" do
+          sign_in admin
+          expect(subject).to be_created
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
+        end
+
+        context "for non-countries" do
+          let(:params) do
+            {
+              actor: {
+                code: "test",
+                title: "test",
+                description: "test",
+                actortype_id: actortype.id,
+                target_date: "today",
+                public_api: true,
+                draft: false,
+                is_archive: false,
+                private: false
+              }
+            }
+          end
+
+          it "will be rejected by validation" do
+            sign_in admin
+            expect(subject).to have_http_status(422)
+            json = JSON.parse(subject.body)
+            expect(json["public_api"]).to be_present
+          end
+        end
+      end
+
+      it "will record what team member created the actor", versioning: true do
         expect(PaperTrail).to be_enabled
         sign_in manager
         json = JSON.parse(subject.body)
@@ -256,7 +317,7 @@ RSpec.describe ActorsController, type: :controller do
         expect(subject).to be_forbidden
       end
 
-      it "will allow a manager to update an actor" do
+      it "will allow a team member to update an actor" do
         sign_in manager
         expect(subject).to be_ok
       end
@@ -271,7 +332,7 @@ RSpec.describe ActorsController, type: :controller do
           put :update, format: :json, params: {id: actor, actor: {is_archive: true}}
         end
 
-        it "can't be set by manager" do
+        it "can't be set by team member" do
           sign_in manager
           expect(JSON.parse(subject.body).dig("data", "attributes", "is_archive")).to eq false
         end
@@ -279,6 +340,49 @@ RSpec.describe ActorsController, type: :controller do
         it "can be set by admin" do
           sign_in admin
           expect(JSON.parse(subject.body).dig("data", "attributes", "is_archive")).to eq true
+        end
+      end
+
+      context "public_api" do
+        let(:country_actortype) { FactoryBot.create(:actortype, id: Actor::COUNTRY_TYPE_ID, title: "Country") }
+        let(:actor) { FactoryBot.create(:actor, actortype: country_actortype, draft: false, is_archive: false, private: false) }
+
+        subject do
+          put :update, format: :json, params: {
+            id: actor,
+            actor: {
+              public_api: true,
+              draft: false,
+              is_archive: false,
+              private: false
+            }
+          }
+        end
+
+        it "can't be set by team member" do
+          sign_in manager
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq false
+        end
+
+        it "can be set by coordinator for countries" do
+          sign_in coordinator
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
+        end
+        it "can be set by admin for countries" do
+          sign_in admin
+          expect(JSON.parse(subject.body).dig("data", "attributes", "public_api")).to eq true
+        end
+
+        context "attempting to set for non-country" do
+          let(:non_country_actortype) { FactoryBot.create(:actortype, :not_a_country) }
+          let(:actor) { FactoryBot.create(:actor, actortype: non_country_actortype, draft: false, is_archive: false, private: false) }
+
+          it "will be rejected by validation" do
+            sign_in admin
+            expect(subject).to have_http_status(422)
+            json = JSON.parse(subject.body)
+            expect(json.dig("error", "public_api")).to be_present  # Use .dig for PUT
+          end
         end
       end
 
@@ -304,7 +408,7 @@ RSpec.describe ActorsController, type: :controller do
         end
       end
 
-      it "will record what manager updated the actor", versioning: true do
+      it "will record what team member updated the actor", versioning: true do
         expect(PaperTrail).to be_enabled
         sign_in manager
         json = JSON.parse(subject.body)
@@ -354,7 +458,7 @@ RSpec.describe ActorsController, type: :controller do
         end
       end
 
-      context "as a manager" do
+      context "as a team member" do
         let(:user) { FactoryBot.create(:user, :manager) }
 
         context "with an actor not belonging to the signed in user" do

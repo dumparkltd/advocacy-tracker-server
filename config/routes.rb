@@ -5,46 +5,26 @@ Rails.application.routes.draw do
     passwords: "overrides/passwords"
   }
 
-  resources :taxonomies do
-    resources :categories
-  end
-  get "static_pages/home"
-
+  resources :taxonomies
   resources :actor_categories, only: [:index, :show, :create, :destroy]
-  resources :actor_measures, only: [:index, :show, :create, :update, :destroy]
+  resources :actor_measures
   resources :actors
   resources :actortype_taxonomies, only: [:index, :show]
   resources :actortypes, only: [:index, :show]
-  resources :measure_actors, only: [:index, :show, :create, :update, :destroy]
+  resources :measure_actors
   resources :measure_categories
-  resources :measure_indicators, only: [:index, :show, :create, :update, :destroy]
+  resources :measure_indicators
   resources :measure_measures
   resources :measure_resources
   resources :measuretype_taxonomies, only: [:index, :show]
   resources :measuretypes, only: [:index, :show]
   resources :memberships, only: [:index, :show, :create, :destroy]
-  resources :recommendation_categories
   resources :resourcetypes, only: [:index, :show]
   resources :user_actors
-  resources :user_categories
   resources :user_measures
-  resources :recommendation_measures
-  resources :categories do
-    resources :recommendations, only: [:index, :show]
-    resources :measures, only: [:index, :show]
-  end
-  resources :recommendations do
-    resources :measures, only: [:index, :show]
-  end
-  resources :measures do
-    resources :recommendations, only: [:index, :show]
-  end
-  resources :indicators do
-    resources :measures, only: [:index, :show]
-    resources :progress_reports, only: [:index, :show]
-  end
-  resources :progress_reports
-  resources :due_dates
+  resources :categories
+  resources :measures
+  resources :indicators
   resources :users
   resources :user_roles
   resources :roles
@@ -52,14 +32,18 @@ Rails.application.routes.draw do
   resources :resources
   resources :bookmarks
 
-  resources :frameworks, only: [:index, :show]
-  resources :framework_frameworks, only: [:index, :show]
-  resources :framework_taxonomies, only: [:index, :show]
-
-  resources :recommendation_recommendations, except: [:update]
-  resources :recommendation_indicators, except: [:update]
+  # public routes - separate from client API
+  namespace :api do
+    namespace :v1 do
+      get 'public/statements', to: 'statements#index'
+      get 'public/country-statements', to: 'country_statements#index'
+      # get 'public/topics', to: 'topics#index'
+      # get 'public/countries', to: 'countries#index'
+    end
+  end
 
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
   root to: "static_pages#home"
+
 end

@@ -10,6 +10,7 @@ class ResourcePolicy < ApplicationPolicy
       :title,
       :resourcetype_id,
       :url,
+      :updated_by_id,
       (:is_archive if @user.role?("admin"))
     ].compact
   end
