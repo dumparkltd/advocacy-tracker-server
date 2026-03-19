@@ -5,7 +5,7 @@ ruby File.read(File.expand_path(".ruby-version", __dir__)).strip
 
 gem "base64"
 gem "batch_api"
-gem "bcrypt", "~> 3.1.7"
+gem "bcrypt", "~> 3.1.22"
 gem "bigdecimal"
 gem "devise"
 gem "devise_token_auth"
