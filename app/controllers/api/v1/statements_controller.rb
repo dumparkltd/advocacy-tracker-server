@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Api
   module V1
     class StatementsController < ActionController::API
@@ -16,7 +17,7 @@ module Api
         statement_max = Measure.where(measuretype_id: Measure::STATEMENT_TYPE_ID).maximum(:updated_at)
         relationship_max = statements.maximum(:relationship_updated_at) || Time.at(0)
         topic_max = Indicator.maximum(:updated_at)
-        statement_topic_max = statements.joins(:measure_indicators).maximum('measure_indicators.updated_at')
+        statement_topic_max = statements.joins(:measure_indicators).maximum("measure_indicators.updated_at")
         event_max = Measure.where(measuretype_id: Measure::EVENT_TYPE_ID).maximum(:updated_at)
         measure_measure_max = MeasureMeasure.maximum(:updated_at)
 
@@ -63,10 +64,12 @@ module Api
             statement.measure_indicators.each do |measure_indicator|
               topic = topics.find { |t| t.id == measure_indicator.indicator_id }
               next unless topic
+              # only consider strong support
+              next unless measure_indicator.supportlevel_id == 1
 
+              # position_value = map_supportlevel_to_position(measure_indicator.supportlevel_id)
               topic_key = topic.code_api.presence || topic.id
-              position_value = map_supportlevel_to_position(measure_indicator.supportlevel_id)
-              result["position_t#{topic_key}"] = position_value
+              result["position_t#{topic_key}"] = 3 # position_value
             end
 
             result
@@ -76,19 +79,19 @@ module Api
         render json: json
       end
 
-      private
+      # private
 
-      def map_supportlevel_to_position(supportlevel_id)
-        case supportlevel_id
-        when 1 then 3 # "strong" > "Called for"
-        when 2 then 2 # "quite positive" > "Supported"
-        when 3 then 0 # "on the fence" > "no support"
-        when 4 then -1 # "sceptical" > "no support*"
-        when 5 then -1 # "opponent" > "no support*"
-        when 99 then 0 # "no statement" > "no support"
-        else 0 # "no support"
-        end
-      end
+      # def map_supportlevel_to_position(supportlevel_id)
+      #   case supportlevel_id
+      #   when 1 then 3 # "strong" > "Called for"
+      #   when 2 then 2 # "quite positive" > "Supported"
+      #   when 3 then 0 # "on the fence" > "no support"
+      #   when 4 then -1 # "sceptical" > "no support*"
+      #   when 5 then -1 # "opponent" > "no support*"
+      #   when 99 then 0 # "no statement" > "no support"
+      #   else 0 # "no support"
+      #   end
+      # end
     end
   end
 end
