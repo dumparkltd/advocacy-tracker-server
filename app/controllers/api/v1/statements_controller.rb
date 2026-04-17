@@ -52,7 +52,8 @@ module Api
               quote: statement.quote_api,
               source: statement.source_api,
               event_id: parent_event&.id,
-              updated_at: statement.updated_at
+              updated_at: statement.updated_at,
+              has_precedence: statement.has_precedence || false
             }
 
             # Initialize ALL public topic positions as null
