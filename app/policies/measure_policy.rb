@@ -36,7 +36,7 @@ class MeasurePolicy < ApplicationPolicy
       # only for admins
       (@user.role?("admin") ? :is_archive : nil),
       # only for admins or coordinators
-      ((@user.role?("admin") || @user.role?("coordinator")) && statement? ? :public_api : nil)
+      (((@user.role?("admin") || @user.role?("coordinator")) && statement?) ? :public_api : nil)
     ].compact
   end
 
