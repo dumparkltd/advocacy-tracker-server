@@ -33,7 +33,8 @@ class MeasureSerializer
     :source_api,
     :quote_api,
     :relationship_updated_at,
-    :relationship_updated_by_id
+    :relationship_updated_by_id,
+    :has_precedence
   )
 
   set_type :measures

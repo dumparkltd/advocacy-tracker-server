@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_16_182458) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_17_080239) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -283,6 +283,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_16_182458) do
     t.datetime "date_start", precision: nil
     t.text "description"
     t.boolean "draft", default: false
+    t.boolean "has_precedence"
     t.boolean "has_reference_landbased_ml"
     t.text "indicator_summary"
     t.boolean "is_archive", default: false

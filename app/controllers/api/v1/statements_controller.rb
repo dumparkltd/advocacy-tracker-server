@@ -52,7 +52,8 @@ module Api
               quote: statement.quote_api,
               source: statement.source_api,
               event_id: parent_event&.id,
-              updated_at: statement.updated_at
+              updated_at: statement.updated_at,
+              has_precedence: statement.has_precedence || false
             }
 
             # Initialize ALL public topic positions as null
@@ -64,12 +65,10 @@ module Api
             statement.measure_indicators.each do |measure_indicator|
               topic = topics.find { |t| t.id == measure_indicator.indicator_id }
               next unless topic
-              # only consider strong support
-              next unless measure_indicator.supportlevel_id == 1
 
-              # position_value = map_supportlevel_to_position(measure_indicator.supportlevel_id)
+              position_value = map_supportlevel_to_position(measure_indicator.supportlevel_id)
               topic_key = topic.code_api.presence || topic.id
-              result["position_t#{topic_key}"] = 3 # position_value
+              result["position_t#{topic_key}"] = position_value
             end
 
             result
@@ -79,19 +78,19 @@ module Api
         render json: json
       end
 
-      # private
+      private
 
-      # def map_supportlevel_to_position(supportlevel_id)
-      #   case supportlevel_id
-      #   when 1 then 3 # "strong" > "Called for"
-      #   when 2 then 2 # "quite positive" > "Supported"
-      #   when 3 then 0 # "on the fence" > "no support"
-      #   when 4 then -1 # "sceptical" > "no support*"
-      #   when 5 then -1 # "opponent" > "no support*"
-      #   when 99 then 0 # "no statement" > "no support"
-      #   else 0 # "no support"
-      #   end
-      # end
+      def map_supportlevel_to_position(supportlevel_id)
+        case supportlevel_id
+        when 1 then 3 # "Supportive" > "Supportive"
+        when 2 then 0 # "Mostly supportive" > "Have not expressed support"
+        when 3 then 0 # "on the fence" > "Have not expressed support"
+        when 4 then 0 # "Mostly opposing" > "Have not expressed support*"
+        when 5 then 0 # "Opposing" > "Have not expressed support*"
+        when 99 then 0 # "no statement" > "Have not expressed support"
+        else 0 # "no support"
+        end
+      end
     end
   end
 end

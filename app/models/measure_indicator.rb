@@ -19,11 +19,6 @@ class MeasureIndicator < ApplicationRecord
     measure&.can_change_relationships_by?(user)
   end
 
-  def can_be_changed_by?(user)
-    # returns false if measure doesn't exist or doesn't allow change
-    measure&.can_change_relationships_by?(user)
-  end
-
   private
 
   def set_relationship_updated
