@@ -82,12 +82,12 @@ module Api
 
       def map_supportlevel_to_position(supportlevel_id)
         case supportlevel_id
-        when 1 then 3 # "strong" > "support"
-        when 2 then 0 # "quite positive" > "no (sufficient) support"
-        when 3 then 0 # "on the fence" > "no support"
-        when 4 then -1 # "sceptical" > "no support*"
-        when 5 then -1 # "opponent" > "no support*"
-        when 99 then 0 # "no statement" > "no support"
+        when 1 then 3 # "Supportive" > "Supportive"
+        when 2 then 0 # "Mostly supportive" > "Have not expressed support"
+        when 3 then 0 # "on the fence" > "Have not expressed support"
+        when 4 then 0 # "Mostly opposing" > "Have not expressed support*"
+        when 5 then 0 # "Opposing" > "Have not expressed support*"
+        when 99 then 0 # "no statement" > "Have not expressed support"
         else 0 # "no support"
         end
       end
