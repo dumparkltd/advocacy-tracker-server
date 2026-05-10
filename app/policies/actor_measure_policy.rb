@@ -12,4 +12,20 @@ class ActorMeasurePolicy < ApplicationPolicy
       :value
     ]
   end
+
+  def create?
+    super && @record.can_be_changed_by?(@user)
+  end
+
+  def update?
+    super && @record.can_be_changed_by?(@user)
+  end
+
+  def destroy?
+    # Override ApplicationPolicy - managers/coordinators can delete relationships
+    # (unless the statement is published)
+    return false unless @user.role?("admin") || @user.role?("manager") || @user.role?("coordinator")
+
+    @record.can_be_changed_by?(@user)
+  end
 end

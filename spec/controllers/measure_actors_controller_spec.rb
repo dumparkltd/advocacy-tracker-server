@@ -149,14 +149,6 @@ RSpec.describe MeasureActorsController, type: :controller do
         context "with a measure_actor not belonging to the signed in user" do
           let(:measure_actor) { FactoryBot.create(:measure_actor) }
 
-          it "will not allow you to delete a measure_actor" do
-            expect(subject).to be_forbidden
-          end
-        end
-
-        context "with a measure_actor belonging to the signed in user" do
-          let(:measure_actor) { FactoryBot.create(:measure_actor, created_by: user) }
-
           it "will allow you to delete a measure_actor" do
             expect(subject).to be_no_content
           end
@@ -168,14 +160,6 @@ RSpec.describe MeasureActorsController, type: :controller do
 
         context "with a measure_actor not belonging to the signed in user" do
           let(:measure_actor) { FactoryBot.create(:measure_actor) }
-
-          it "will not allow you to delete a measure_actor" do
-            expect(subject).to be_forbidden
-          end
-        end
-
-        context "with a measure_actor belonging to the signed in user" do
-          let(:measure_actor) { FactoryBot.create(:measure_actor, created_by: user) }
 
           it "will allow you to delete a measure_actor" do
             expect(subject).to be_no_content

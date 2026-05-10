@@ -17,6 +17,7 @@ class MeasuresController < ApplicationController
   # POST /measures
   def create
     @measure = Measure.new
+    @measure.measuretype_id = params.dig(:measure, :measuretype_id) if params.dig(:measure, :measuretype_id)
     @measure.assign_attributes(permitted_attributes(@measure))
     authorize @measure
 

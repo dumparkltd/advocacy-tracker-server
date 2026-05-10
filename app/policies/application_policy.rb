@@ -49,12 +49,6 @@ class ApplicationPolicy
       analyst_scope
     end
 
-    def resolve_for_coordinator
-      coordinator_scope = scope.all
-      coordinator_scope = coordinator_scope.where(is_archive: false) if scope.column_names.include?("is_archive")
-      coordinator_scope
-    end
-
     def resolve_for_manager
       manager_scope = scope.all
       if scope.column_names.include?("private")
@@ -64,6 +58,12 @@ class ApplicationPolicy
       end
       manager_scope = manager_scope.where(is_archive: false) if scope.column_names.include?("is_archive")
       manager_scope
+    end
+
+    def resolve_for_coordinator
+      coordinator_scope = scope.all
+      coordinator_scope = coordinator_scope.where(is_archive: false) if scope.column_names.include?("is_archive")
+      coordinator_scope
     end
 
     def initialize(user, scope)

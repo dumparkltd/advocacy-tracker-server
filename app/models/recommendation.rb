@@ -16,8 +16,6 @@ class Recommendation < VersionedRecord
 
   belongs_to :framework, optional: true
 
-  accepts_nested_attributes_for :recommendation_categories
-
   validates :title, presence: true
   validates :reference, presence: true
 end

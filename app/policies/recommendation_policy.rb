@@ -2,13 +2,14 @@
 
 class RecommendationPolicy < ApplicationPolicy
   def permitted_attributes
-    [:title,
+    [
+      :title,
       :draft,
       :accepted,
       :response,
       :reference,
       :description,
-      :framework_id,
-      recommendation_categories_attributes: [:category_id]]
+      :framework_id
+    ]
   end
 end

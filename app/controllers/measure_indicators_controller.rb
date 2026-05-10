@@ -1,4 +1,6 @@
 class MeasureIndicatorsController < ApplicationController
+  skip_before_action :authorize!, only: [:create]
+  
   # GET /measure_indicators
   def index
     @measure_indicators = policy_scope(base_object).order(created_at: :desc).page(params[:page])

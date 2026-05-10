@@ -13,6 +13,11 @@ class UserMeasure < VersionedRecord
   after_commit :set_relationship_created, on: [:create]
   after_commit :set_relationship_updated, on: [:update, :destroy]
 
+  def can_be_changed_by?(user)
+    # returns false if measure doesn't exist or doesn't allow change
+    measure&.can_change_relationships_by?(user)
+  end
+
   private
 
   def set_relationship_created

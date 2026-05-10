@@ -6,19 +6,20 @@ class IndicatorPolicy < ApplicationPolicy
       :code,
       :title,
       :description,
+      # :description_api,
       :draft,
-      :manager_id,
-      :frequency_months,
-      :start_date,
-      :repeat,
-      :end_date,
       :reference,
       :private,
-      (:is_archive if @user.role?("admin")),
-      measure_indicators_attributes: [
-        :measure_id,
-        measure_attributes: [:id, :title, :description, :target_date, :draft]
-      ]
+      :updated_by_id,
+      :parent_id,
+      # :teaser_api,
+      # :annotation_api,
+      # :short_api,
+      :code_api,
+      # only for admins
+      (@user.role?("admin") ? :is_archive : nil),
+      # only for admins or coordinators
+      (@user.role?("admin") || @user.role?("coordinator")  ? :public_api : nil)
     ].compact
   end
 end

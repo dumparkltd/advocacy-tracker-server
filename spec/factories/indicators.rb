@@ -5,31 +5,21 @@ FactoryBot.define do
     title { Faker::Lorem.sentence }
     description { Faker::Hipster.sentence }
 
+    is_archive { false }
+    private { false }
+    draft { true }
+    public_api { false }
+
     trait :without_measure do
       measures { [] }
     end
 
-    trait :with_repeat do
-      repeat { true }
-      end_date { Date.today + 1.year }
-      start_date { Date.today }
-      frequency_months { 1 }
+    trait :draft do
+      draft { true }
     end
 
-    trait :without_repeat do
-      repeat { false }
-      start_date { Date.today }
-    end
-
-    trait :with_12_due_dates do
-      repeat { true }
-      end_date { Date.today + 1.year - 15.days }
-      start_date { Date.today }
-      frequency_months { 1 }
-    end
-
-    trait :with_manager do
-      manager { create(:user) }
+    trait :not_draft do
+      draft { false }
     end
 
     trait :is_archive do
@@ -40,12 +30,30 @@ FactoryBot.define do
       is_archive { false }
     end
 
+    trait :private do
+      private { true }
+    end
+
     trait :not_private do
       private { false }
     end
 
-    trait :private do
-      private { true }
+    trait :public do
+      public_api { true }
+    end
+
+    trait :not_public do
+      public_api { false }
+    end
+
+    trait :parent_indicator do
+      title { "parent indicator" }
+      # parent_id will be nil by default
+    end
+
+    trait :child_indicator do
+      title { "child indicator" }
+      association :parent, factory: :indicator
     end
   end
 end

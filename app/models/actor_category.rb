@@ -2,9 +2,6 @@ class ActorCategory < VersionedRecord
   belongs_to :actor, required: true
   belongs_to :category, required: true
 
-  accepts_nested_attributes_for :actor
-  accepts_nested_attributes_for :category
-
   validates :actor_id, presence: true
   validates :category_id, presence: true, uniqueness: {scope: :actor_id}
   validate :category_taxonomy_enabled_for_actortype

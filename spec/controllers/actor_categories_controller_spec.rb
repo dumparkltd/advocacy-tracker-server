@@ -111,14 +111,6 @@ RSpec.describe ActorCategoriesController, type: :controller do
         context "with an actor_category not belonging to the signed in user" do
           let(:actor_category) { FactoryBot.create(:actor_category, category:, actor:) }
 
-          it "will not allow you to delete the actor_category" do
-            expect(subject).to be_forbidden
-          end
-        end
-
-        context "with an actor_category belonging to the signed in user" do
-          let(:actor_category) { FactoryBot.create(:actor_category, category:, actor:, created_by: user) }
-
           it "will allow you to delete the actor_category" do
             expect(subject).to be_no_content
           end
@@ -130,14 +122,6 @@ RSpec.describe ActorCategoriesController, type: :controller do
 
         context "with an actor_category not belonging to the signed in user" do
           let(:actor_category) { FactoryBot.create(:actor_category, category:, actor:) }
-
-          it "will not allow you to delete the actor_category" do
-            expect(subject).to be_forbidden
-          end
-        end
-
-        context "with an actor_category belonging to the signed in user" do
-          let(:actor_category) { FactoryBot.create(:actor_category, category:, actor:, created_by: user) }
 
           it "will allow you to delete the actor_category" do
             expect(subject).to be_no_content

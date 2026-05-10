@@ -1,4 +1,6 @@
 class ActorMeasuresController < ApplicationController
+  skip_before_action :authorize!, only: [:create]
+  
   # GET /actor_measures/:id
   def show
     authorize @actor_measure

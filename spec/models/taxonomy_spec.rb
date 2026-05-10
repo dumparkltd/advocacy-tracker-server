@@ -8,9 +8,6 @@ RSpec.describe Taxonomy, type: :model do
   # it { is_expected.to validate_inclusion_of(:tags_measures).in_array([true, false]) }
 
   it { is_expected.to have_many(:categories) }
-  it { is_expected.to belong_to(:framework).optional }
-  it { is_expected.to have_many(:frameworks) }
-  it { is_expected.to have_many(:framework_taxonomies) }
   it { is_expected.to belong_to(:taxonomy).optional }
   it { is_expected.to have_many :taxonomies }
 
@@ -41,17 +38,15 @@ RSpec.describe Taxonomy, type: :model do
 
     it "is expected to cascade destroy dependent relationships" do
       taxonomy = FactoryBot.create(:measuretype_taxonomy).taxonomy
-      FactoryBot.create(:framework_taxonomy, taxonomy: taxonomy)
       FactoryBot.create(:actortype_taxonomy, taxonomy: taxonomy)
 
       expect { taxonomy.destroy }.to change {
         [
           Taxonomy.count,
           MeasuretypeTaxonomy.count,
-          FrameworkTaxonomy.count,
           ActortypeTaxonomy.count
         ]
-      }.from([1, 1, 1, 1]).to([0, 0, 0, 0])
+      }.from([1, 1, 1]).to([0, 0, 0])
     end
   end
 end
