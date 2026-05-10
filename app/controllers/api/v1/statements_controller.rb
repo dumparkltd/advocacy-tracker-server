@@ -47,7 +47,7 @@ module Api
               gpat_id: statement.id,
               code: statement.code,
               title: statement.title,
-              date: statement.date_start,
+              date: statement.date_start || statement.created_at,
               url: statement.url,
               quote: statement.quote_api,
               source: statement.source_api,

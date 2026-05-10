@@ -47,7 +47,8 @@ module Api
               'actors.code as country_code',
               'measures.id as statement_id',
               'measures.code as statement_code',
-              'measures.date_start as date_start'
+              'measures.date_start as date_start',
+              'measures.created_at as measure_created_at'
             )
 
           direct_relationships.each do |rel|
@@ -56,7 +57,7 @@ module Api
               country_code: rel.country_code,
               statement_id: rel.statement_id,
               statement_code: rel.statement_code,
-              date_start: rel.date_start
+              date_start: rel.date_start || rel.measure_created_at
             }
           end
 
@@ -85,6 +86,7 @@ module Api
               'measures.id as statement_id',
               'measures.code as statement_code',
               'measures.date_start as date_start',
+              'measures.created_at as measure_created_at',
               'groups.id as group_id',
               'groups.code as group_code'
             )
@@ -97,7 +99,7 @@ module Api
               statement_code: rel.statement_code,
               via_group_id: rel.group_id,
               via_group_code: rel.group_code,
-              date_start: rel.date_start
+              date_start: rel.date_start || rel.measure_created_at
             }
           end
 
