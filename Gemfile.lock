@@ -82,7 +82,7 @@ GEM
     base64 (0.3.0)
     batch_api (0.3.0)
       middleware
-    bcrypt (3.1.21)
+    bcrypt (3.1.22)
     better_errors (2.9.1)
       coderay (>= 1.0.0)
       erubi (>= 1.0.0)
@@ -430,7 +430,7 @@ DEPENDENCIES
   awesome_print
   base64
   batch_api
-  bcrypt (~> 3.1.7)
+  bcrypt (~> 3.1.22)
   better_errors
   bigdecimal
   binding_of_caller
