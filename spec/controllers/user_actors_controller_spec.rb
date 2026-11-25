@@ -75,7 +75,8 @@ RSpec.describe UserActorsController, type: :controller do
     context "when user signed in" do
       let(:admin) { FactoryBot.create(:user, :admin) }
       let(:guest) { FactoryBot.create(:user) }
-      let(:user) { FactoryBot.create(:user, :manager) }
+      let(:coordinator) { FactoryBot.create(:user, :coordinator) }
+      let(:manager) { FactoryBot.create(:user, :manager) }
 
       it "will not allow a guest to delete a user_actor" do
         sign_in guest
@@ -83,8 +84,22 @@ RSpec.describe UserActorsController, type: :controller do
       end
 
       it "will not allow a manager to delete a user_actor" do
-        sign_in user
+        sign_in manager
         expect(subject).to be_forbidden
+      end
+
+      context "when the manager created the user_actor" do
+        let(:user_actor) { FactoryBot.create(:user_actor, created_by_id: manager.id) }
+
+        it "will allow a manager to delete their own user_actor" do
+          sign_in manager
+          expect(subject).to be_no_content
+        end
+      end
+
+      it "will allow a coordinator to delete a user_actor" do
+        sign_in coordinator
+        expect(subject).to be_no_content
       end
 
       it "will allow an admin to delete a user_actor" do

@@ -1,5 +1,5 @@
 class UserActorsController < ApplicationController
-  before_action :set_and_authorize_user_actor, only: [:show, :update, :destroy]
+  skip_before_action :authorize!, only: [:create]
 
   # GET /user_actors
   def index
@@ -41,10 +41,10 @@ class UserActorsController < ApplicationController
 
   private
 
-  # Use callbacks to share common setup or constraints between actions.
-  def set_and_authorize_user_actor
-    @user_actor = policy_scope(base_object).find(params[:id])
-    authorize @user_actor
+  def authorize!
+    @user_actor = policy_scope(base_object)&.find(params[:id]) if params[:id]
+
+    authorize @user_actor || base_object
   end
 
   def base_object

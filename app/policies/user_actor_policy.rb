@@ -14,6 +14,10 @@ class UserActorPolicy < ApplicationPolicy
     false
   end
 
+  def destroy?
+    @user.role?("coordinator") || super
+  end
+
   class Scope < Scope
     def resolve
       scope.all
